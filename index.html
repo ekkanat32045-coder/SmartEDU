@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" id="htmlRoot" class="dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>ระบบบันทึกข้อมูลบุคลากรครูพละ สพม.บุรีรัมย์</title>
 
   <!-- Sleek Fonts -->
@@ -14,6 +14,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
           fontFamily: {
@@ -49,41 +50,80 @@
     body {
       font-family: 'Inter', 'Sarabun', sans-serif;
       -webkit-tap-highlight-color: transparent;
+      min-height: 100vh;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Dark Theme Background */
+    html.dark body {
       background: radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.12) 0, transparent 45%), 
                   radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.15) 0, transparent 45%), 
                   radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.1) 0, transparent 50%),
                   #090d16;
       background-attachment: fixed;
-      min-height: 100vh;
+      color: #f8fafc;
     }
 
-    .fintech-panel {
-      background: rgba(30, 41, 59, 0.6);
+    /* Light Theme Background */
+    html.light body {
+      background: radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.08) 0, transparent 50%), 
+                  radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.08) 0, transparent 50%), 
+                  #f1f5f9;
+      background-attachment: fixed;
+      color: #0f172a;
+    }
+
+    /* Glass Panels */
+    html.dark .fintech-panel {
+      background: rgba(30, 41, 59, 0.65);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
-    .fintech-card {
+    html.light .fintech-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      box-shadow: 0 15px 30px -10px rgba(0, 0, 0, 0.08);
+    }
+
+    /* Glass Cards */
+    html.dark .fintech-card {
       background: rgba(255, 255, 255, 0.035);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
     }
+    html.light .fintech-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.06);
+    }
+
     .fintech-card-hover {
       transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .fintech-card-hover:hover {
-      background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(56, 189, 248, 0.35);
       transform: translateY(-2px);
       box-shadow: 0 15px 30px -5px rgba(2, 132, 199, 0.25);
     }
-    .glass-input {
+
+    /* Inputs */
+    html.dark .glass-input {
       background: rgba(15, 23, 42, 0.65);
       border: 1px solid rgba(255, 255, 255, 0.12);
       color: #ffffff;
+      backdrop-filter: blur(10px);
+    }
+    html.light .glass-input {
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      color: #0f172a;
       backdrop-filter: blur(10px);
     }
     .glass-input:focus {
@@ -115,9 +155,24 @@
       background-color: rgba(255, 255, 255, 0.15);
       border-radius: 9999px;
     }
+    html.light .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(0, 0, 0, 0.15);
+    }
+
+    /* Sidebar Transitions */
+    .sidebar-collapsed {
+      width: 5rem !important;
+    }
+    .sidebar-collapsed .sidebar-text,
+    .sidebar-collapsed .sidebar-badge-text {
+      display: none !important;
+    }
+    .sidebar-collapsed .sidebar-header {
+      justify-content: center !important;
+    }
   </style>
 </head>
-<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-pink-500 selection:text-white">
+<body class="antialiased selection:bg-pink-500 selection:text-white">
 
   <!-- LOADER OVERLAY -->
   <div id="globalLoader" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden">
@@ -135,14 +190,18 @@
           <i data-lucide="trophy" class="w-5 h-5"></i>
         </div>
         <div>
-          <h1 class="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-bold tracking-wide flex items-center gap-2">
             <span id="landingAppName">ครูพละ สพม.บุรีรัมย์</span>
             <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 font-mono">Verified</span>
           </h1>
           <p id="landingAppSubName" class="text-[11px] text-slate-400 font-light">สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์</p>
         </div>
       </div>
-      <div>
+      <div class="flex items-center gap-2">
+        <!-- Theme Toggle Button -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl fintech-card hover:bg-white/10 text-slate-300 transition" title="สลับโหมด มืด-สว่าง">
+          <i id="landingThemeIcon" data-lucide="sun" class="w-4 h-4"></i>
+        </button>
         <button onclick="openLoginModal()" class="gradient-btn px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-lg active:scale-95 flex items-center gap-2 border border-white/15">
           <i data-lucide="log-in" class="w-4 h-4"></i> เข้าสู่ระบบ
         </button>
@@ -179,7 +238,7 @@
             <span class="text-xs font-medium text-slate-400">ครูพละทั้งหมด</span>
             <i data-lucide="users" class="w-5 h-5 bg-sky-500/10 p-1 rounded-lg"></i>
           </div>
-          <p id="landingTotalTeachers" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <p id="landingTotalTeachers" class="text-2xl sm:text-3xl font-bold font-mono">0</p>
           <span class="text-[10px] text-slate-400">อัตรากำลังในสังกัด</span>
         </div>
 
@@ -188,7 +247,7 @@
             <span class="text-xs font-medium text-slate-400">สหวิทยาเขต</span>
             <i data-lucide="map-pin" class="w-5 h-5 bg-rose-500/10 p-1 rounded-lg"></i>
           </div>
-          <p id="landingTotalDistricts" class="text-2xl sm:text-3xl font-bold text-white font-mono">9</p>
+          <p id="landingTotalDistricts" class="text-2xl sm:text-3xl font-bold font-mono">9</p>
           <span class="text-[10px] text-slate-400">เขตพื้นที่บริการ</span>
         </div>
 
@@ -197,7 +256,7 @@
             <span class="text-xs font-medium text-slate-400">ยอดสั่งจองเสื้อ</span>
             <i data-lucide="shopping-bag" class="w-5 h-5 bg-purple-500/10 p-1 rounded-lg"></i>
           </div>
-          <p id="landingTotalShirts" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <p id="landingTotalShirts" class="text-2xl sm:text-3xl font-bold font-mono">0</p>
           <span class="text-[10px] text-slate-400">ตัว (รวมยอดทั้งหมด)</span>
         </div>
 
@@ -206,7 +265,7 @@
             <span class="text-xs font-medium text-slate-400">เกษียณปีนี้</span>
             <i data-lucide="hourglass" class="w-5 h-5 bg-amber-500/10 p-1 rounded-lg"></i>
           </div>
-          <p id="landingRetireSoon" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <p id="landingRetireSoon" class="text-2xl sm:text-3xl font-bold font-mono">0</p>
           <span class="text-[10px] text-slate-400">ครบวาระปีงบประมาณ</span>
         </div>
       </div>
@@ -214,7 +273,7 @@
       <!-- Charts -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div class="fintech-panel p-5 sm:p-6 rounded-3xl">
-          <h3 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2 mb-4 tracking-wide">
+          <h3 class="text-xs sm:text-sm font-bold flex items-center gap-2 mb-4 tracking-wide">
             <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> สัดส่วนครูพละตาม 9 สหวิทยาเขต
           </h3>
           <div class="h-64 relative flex items-center justify-center">
@@ -223,7 +282,7 @@
         </div>
 
         <div class="fintech-panel p-5 sm:p-6 rounded-3xl">
-          <h3 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2 mb-4 tracking-wide">
+          <h3 class="text-xs sm:text-sm font-bold flex items-center gap-2 mb-4 tracking-wide">
             <i data-lucide="bar-chart-2" class="w-4 h-4 text-rose-400"></i> สถิติตำแหน่งและวิทยฐานะ
           </h3>
           <div class="h-64 relative flex items-center justify-center">
@@ -240,7 +299,7 @@
     </footer>
   </div>
 
-  <!-- ================= 2. LOGIN MODAL (PASSWORD TOGGLE) ================= -->
+  <!-- ================= 2. LOGIN MODAL ================= -->
   <div id="modalLogin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-sm w-full p-6 sm:p-8 border border-white/15 shadow-2xl relative">
       <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full transition">
@@ -251,8 +310,8 @@
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 to-sky-500 flex items-center justify-center text-white mx-auto mb-3 shadow-lg border border-white/20">
           <i data-lucide="fingerprint" class="w-7 h-7"></i>
         </div>
-        <h3 class="text-lg font-bold text-white tracking-tight">ระบบยืนยันตัวตน</h3>
-        <p class="text-xs text-slate-300 mt-1 font-light">สพม.บุรีรัมย์</p>
+        <h3 class="text-lg font-bold tracking-tight">ระบบยืนยันตัวตน</h3>
+        <p class="text-xs text-slate-400 mt-1 font-light">สพม.บุรีรัมย์</p>
       </div>
 
       <div id="loginAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-2">
@@ -283,16 +342,21 @@
 
   <!-- ================= 3. MAIN DASHBOARD APP ================= -->
   <div id="mainAppView" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
-    <!-- Desktop Sidebar -->
-    <aside id="desktopSidebar" class="hidden md:flex flex-col w-64 fintech-panel border-r border-white/10 shrink-0 m-3 rounded-3xl overflow-hidden">
-      <div class="p-5 border-b border-white/10 flex items-center space-x-3">
-        <div id="sidebarLogoContainer" class="w-9 h-9 bg-gradient-to-tr from-rose-500 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-md overflow-hidden shrink-0 border border-white/15">
-          <i data-lucide="activity" class="w-5 h-5"></i>
+    <!-- Desktop Collapsible Sidebar -->
+    <aside id="desktopSidebar" class="hidden md:flex flex-col w-64 fintech-panel border-r border-white/10 shrink-0 m-3 rounded-3xl overflow-hidden transition-all duration-300">
+      <div class="p-5 border-b border-white/10 flex items-center justify-between sidebar-header">
+        <div class="flex items-center space-x-3 overflow-hidden">
+          <div id="sidebarLogoContainer" class="w-9 h-9 bg-gradient-to-tr from-rose-500 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-md overflow-hidden shrink-0 border border-white/15">
+            <i data-lucide="activity" class="w-5 h-5"></i>
+          </div>
+          <div class="overflow-hidden sidebar-text">
+            <h2 id="sidebarAppName" class="font-bold text-sm tracking-wide truncate">ครูพละ สพม.บร.</h2>
+            <p id="sidebarAppSubName" class="text-[10px] text-slate-400 truncate font-light">Management Suite</p>
+          </div>
         </div>
-        <div class="overflow-hidden">
-          <h2 id="sidebarAppName" class="font-bold text-sm text-white tracking-wide truncate">ครูพละ สพม.บร.</h2>
-          <p id="sidebarAppSubName" class="text-[10px] text-slate-400 truncate font-light">Management Suite</p>
-        </div>
+        <button onclick="toggleSidebarCollapse()" class="p-1.5 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition" title="ยุบ/ขยายเมนู">
+          <i data-lucide="panel-left-close" class="w-4 h-4"></i>
+        </button>
       </div>
 
       <!-- User Badge -->
@@ -300,50 +364,53 @@
         <div id="userAvatarContainer" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-sky-500 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-inner border border-white/15">
           <span id="userInitial">U</span>
         </div>
-        <div class="overflow-hidden flex-1">
-          <p id="userNameDisplay" class="text-xs font-semibold text-white truncate">ชื่อ-สกุล</p>
+        <div class="overflow-hidden flex-1 sidebar-text">
+          <p id="userNameDisplay" class="text-xs font-semibold truncate">ชื่อ-สกุล</p>
           <span id="userRoleBadge" class="inline-block text-[9px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">ROLE</span>
         </div>
       </div>
 
-      <!-- Navigation -->
+      <!-- Navigation Links -->
       <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto custom-scroll">
         <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-          <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-400"></i> แดชบอร์ดภาพรวม
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-400 shrink-0"></i> <span class="sidebar-text">แดชบอร์ดภาพรวม</span>
         </button>
         <button onclick="navigate('employees')" id="nav-employees" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-          <i data-lucide="users" class="w-4 h-4 text-rose-400"></i> ข้อมูลครูพละ สพม.
+          <i data-lucide="users" class="w-4 h-4 text-rose-400 shrink-0"></i> <span class="sidebar-text">ข้อมูลครูพละ สพม.</span>
+        </button>
+        <button onclick="navigate('district-matrix')" id="nav-district-matrix" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="network" class="w-4 h-4 text-emerald-400 shrink-0"></i> <span class="sidebar-text">รายงานแยกตามสหเขต</span>
         </button>
         <button onclick="navigate('shirts')" id="nav-shirts" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-          <i data-lucide="shirt" class="w-4 h-4 text-purple-400"></i> สั่งจองเสื้อ & รายงาน
+          <i data-lucide="shirt" class="w-4 h-4 text-purple-400 shrink-0"></i> <span class="sidebar-text">สั่งจองเสื้อ & รายงาน</span>
         </button>
         <button onclick="navigate('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-          <i data-lucide="file-bar-chart" class="w-4 h-4 text-amber-400"></i> รายงานสถิติ & เกษียณ
+          <i data-lucide="file-bar-chart" class="w-4 h-4 text-amber-400 shrink-0"></i> <span class="sidebar-text">รายงานสถิติ & เกษียณ</span>
         </button>
         <button onclick="navigate('profile')" id="nav-profile" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-          <i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i> ข้อมูลของฉัน
+          <i data-lucide="user-check" class="w-4 h-4 text-cyan-400 shrink-0"></i> <span class="sidebar-text">ข้อมูลของฉัน</span>
         </button>
         
         <div id="adminNavGroup" class="pt-3 mt-3 border-t border-white/10 space-y-1.5">
-          <p class="px-3 text-[10px] font-semibold text-rose-300/70 uppercase tracking-wider">ผู้ดูแลระบบ</p>
+          <p class="px-3 text-[10px] font-semibold text-rose-300/70 uppercase tracking-wider sidebar-badge-text">ผู้ดูแลระบบ</p>
           <button onclick="navigate('users')" id="nav-users" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-            <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> จัดการผู้ใช้งานระบบ
+            <i data-lucide="shield-check" class="w-4 h-4 text-purple-400 shrink-0"></i> <span class="sidebar-text">จัดการผู้ใช้งานระบบ</span>
           </button>
           <button onclick="navigate('logs')" id="nav-logs" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-            <i data-lucide="history" class="w-4 h-4 text-amber-400"></i> ประวัติการเข้าใช้งาน (Logs)
+            <i data-lucide="history" class="w-4 h-4 text-amber-400 shrink-0"></i> <span class="sidebar-text">ประวัติการใช้งาน (Logs)</span>
           </button>
           <button onclick="openSettingsModal()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
-            <i data-lucide="settings" class="w-4 h-4 text-sky-400"></i> ตั้งค่าระบบ
+            <i data-lucide="settings" class="w-4 h-4 text-sky-400 shrink-0"></i> <span class="sidebar-text">ตั้งค่าระบบ</span>
           </button>
         </div>
       </nav>
 
       <div class="p-3 border-t border-white/10 space-y-1">
         <button onclick="navigateLanding()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-medium transition">
-          <i data-lucide="home" class="w-3.5 h-3.5"></i> หน้าแรกเว็บไซต์
+          <i data-lucide="home" class="w-3.5 h-3.5 shrink-0"></i> <span class="sidebar-text">หน้าแรกเว็บไซต์</span>
         </button>
         <button onclick="openLogoutModal()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-white rounded-xl text-xs font-medium transition border border-rose-500/20">
-          <i data-lucide="log-out" class="w-3.5 h-3.5"></i> ออกจากระบบ
+          <i data-lucide="log-out" class="w-3.5 h-3.5 shrink-0"></i> <span class="sidebar-text">ออกจากระบบ</span>
         </button>
       </div>
     </aside>
@@ -356,12 +423,16 @@
             <i data-lucide="activity" class="w-4 h-4"></i>
           </div>
           <div>
-            <h1 id="pageTitle" class="text-sm md:text-base font-bold text-white tracking-wide">แดชบอร์ดภาพรวม</h1>
+            <h1 id="pageTitle" class="text-sm md:text-base font-bold tracking-wide">แดชบอร์ดภาพรวม</h1>
             <p class="text-[10px] md:text-xs text-slate-400 font-light">สพม.บุรีรัมย์ • ระบบบริหารข้อมูลสารสนเทศ</p>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
+          <!-- Theme Switcher Button -->
+          <button onclick="toggleTheme()" class="p-2 rounded-xl fintech-card hover:bg-white/10 text-slate-300 transition" title="สลับโหมด มืด-สว่าง">
+            <i id="themeToggleIcon" data-lucide="sun" class="w-4 h-4"></i>
+          </button>
           <button onclick="navigateLanding()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1.5 transition border border-white/10">
             <i data-lucide="globe" class="w-3.5 h-3.5 text-sky-400"></i> <span class="hidden sm:inline">หน้าแรก</span>
           </button>
@@ -380,7 +451,7 @@
                 <span class="text-xs font-medium text-slate-400">ครูพละทั้งหมด</span>
                 <i data-lucide="users" class="w-5 h-5 bg-sky-500/10 p-1 rounded-lg"></i>
               </div>
-              <p id="statTotalTeachers" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <p id="statTotalTeachers" class="text-xl md:text-2xl font-bold font-mono">0</p>
               <span class="text-[10px] text-slate-400">สพม.บุรีรัมย์</span>
             </div>
 
@@ -389,7 +460,7 @@
                 <span class="text-xs font-medium text-slate-400">สหวิทยาเขต</span>
                 <i data-lucide="map-pin" class="w-5 h-5 bg-rose-500/10 p-1 rounded-lg"></i>
               </div>
-              <p id="statDistricts" class="text-xl md:text-2xl font-bold text-white font-mono">9</p>
+              <p id="statDistricts" class="text-xl md:text-2xl font-bold font-mono">9</p>
               <span class="text-[10px] text-slate-400">พื้นที่บริการ</span>
             </div>
 
@@ -398,7 +469,7 @@
                 <span class="text-xs font-medium text-slate-400">จองเสื้อแล้ว</span>
                 <i data-lucide="check-circle-2" class="w-5 h-5 bg-purple-500/10 p-1 rounded-lg"></i>
               </div>
-              <p id="statOrderedCount" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <p id="statOrderedCount" class="text-xl md:text-2xl font-bold font-mono">0</p>
               <span class="text-[10px] text-slate-400">คน (สั่งจองแล้ว)</span>
             </div>
 
@@ -407,14 +478,14 @@
                 <span class="text-xs font-medium text-slate-400">ยังไม่จองเสื้อ</span>
                 <i data-lucide="alert-circle" class="w-5 h-5 bg-amber-500/10 p-1 rounded-lg"></i>
               </div>
-              <p id="statUnorderedCount" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <p id="statUnorderedCount" class="text-xl md:text-2xl font-bold font-mono">0</p>
               <span class="text-[10px] text-slate-400">คน (ยังไม่ได้บันทึก)</span>
             </div>
           </div>
 
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
             <div class="fintech-panel p-5 rounded-3xl">
-              <h3 class="text-xs md:text-sm font-bold text-white mb-4 flex items-center gap-2 tracking-wide">
+              <h3 class="text-xs md:text-sm font-bold mb-4 flex items-center gap-2 tracking-wide">
                 <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> สัดส่วนครูพละตามสหวิทยาเขต
               </h3>
               <div class="h-64 relative flex items-center justify-center">
@@ -423,7 +494,7 @@
             </div>
 
             <div class="fintech-panel p-5 rounded-3xl">
-              <h3 class="text-xs md:text-sm font-bold text-white mb-4 flex items-center gap-2 tracking-wide">
+              <h3 class="text-xs md:text-sm font-bold mb-4 flex items-center gap-2 tracking-wide">
                 <i data-lucide="bar-chart-2" class="w-4 h-4 text-rose-400"></i> สถิติตามตำแหน่งวิทยฐานะ
               </h3>
               <div class="h-64 relative flex items-center justify-center">
@@ -533,12 +604,50 @@
           </div>
         </section>
 
+        <!-- ================= TAB: DISTRICT MATRIX REPORT (ใหม่) ================= -->
+        <section id="sec-district-matrix" class="hidden space-y-6 animate-fade-in">
+          <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold flex items-center gap-2">
+                <i data-lucide="network" class="w-4 h-4 text-emerald-400"></i> รายงานสารสนเทศบุคลากรแยกตาม 9 สหวิทยาเขต
+              </h3>
+              <p class="text-xs text-slate-400 font-light">สรุปภาพรวมจำแนกอัตรากำลังพล เพศ ยอดสั่งจองเสื้อ และการเกษียณอายุราชการรายเขต</p>
+            </div>
+            <button onclick="exportDistrictMatrixExcel()" class="px-3.5 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-xl text-xs font-medium flex items-center gap-1.5 border border-emerald-500/30 transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> ส่งออกตาราง Excel
+            </button>
+          </div>
+
+          <!-- District Matrix Table -->
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3.5 px-4">สหวิทยาเขต</th>
+                    <th class="py-3.5 px-4 text-center">จำนวน รร.</th>
+                    <th class="py-3.5 px-4 text-center">ครูพละ (คน)</th>
+                    <th class="py-3.5 px-4 text-center">ชาย</th>
+                    <th class="py-3.5 px-4 text-center">หญิง</th>
+                    <th class="py-3.5 px-4 text-center">สั่งจองเสื้อแล้ว</th>
+                    <th class="py-3.5 px-4 text-center">ยังไม่จอง</th>
+                    <th class="py-3.5 px-4 text-center">เกษียณปีนี้</th>
+                    <th class="py-3.5 px-4 text-center">ดูรายชื่อ</th>
+                  </tr>
+                </thead>
+                <tbody id="districtMatrixTableBody" class="divide-y divide-white/5 text-slate-200">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
         <!-- ================= TAB: SHIRTS ================= -->
         <section id="sec-shirts" class="hidden space-y-6 animate-fade-in">
           <!-- Action Banner -->
           <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <h3 class="text-sm font-bold flex items-center gap-2">
                 <i data-lucide="shirt" class="w-4 h-4 text-rose-400"></i> ระบบสั่งจองเสื้อบุคลากรครูพละ สพม.บุรีรัมย์
               </h3>
               <p class="text-xs text-slate-300 mt-0.5 font-light">ราคาตัวละ <span id="displayShirtPrice" class="text-rose-400 font-bold font-mono">350</span> บาท</p>
@@ -560,7 +669,7 @@
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             <div class="fintech-card p-4 rounded-2xl">
               <span class="text-[11px] text-slate-400 block">จำนวนสั่งจองทั้งหมด</span>
-              <h4 id="summaryShirtTotalQty" class="text-xl font-bold text-white font-mono mt-1">0 ตัว</h4>
+              <h4 id="summaryShirtTotalQty" class="text-xl font-bold font-mono mt-1">0 ตัว</h4>
             </div>
             <div class="fintech-card p-4 rounded-2xl">
               <span class="text-[11px] text-slate-400 block">ยอดรวมทั้งสิ้น (บาท)</span>
@@ -664,7 +773,7 @@
         <section id="sec-reports" class="hidden space-y-6 animate-fade-in">
           <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <h3 class="text-sm font-bold flex items-center gap-2">
                 <i data-lucide="file-bar-chart" class="w-4 h-4 text-amber-400"></i> รายงานสถิติและการเกษียณอายุราชการ
               </h3>
               <p class="text-xs text-slate-400 font-light">ตรวจสอบรายชื่อบุคลากรที่จะครบเกษียณอายุราชการในแต่ละปีงบประมาณ (พ.ศ.)</p>
@@ -725,7 +834,7 @@
               <div id="myProfileAvatar" class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-2xl overflow-hidden border border-white/20 shadow-xl cursor-pointer" onclick="viewDetailModal(currentUser ? currentUser.full_name : '', '', '', '', '', '', '', document.getElementById('myProfileAvatar').querySelector('img')?.src)">
               </div>
               <div class="text-center sm:text-left flex-1">
-                <h3 id="myProfileName" class="text-lg font-bold text-white">ชื่อผู้ใช้งาน</h3>
+                <h3 id="myProfileName" class="text-lg font-bold">ชื่อผู้ใช้งาน</h3>
                 <p id="myProfileRole" class="text-xs text-rose-400 font-mono mt-0.5">ROLE</p>
                 <p id="myProfileSchool" class="text-xs text-slate-300 mt-1 font-light">โรงเรียน -</p>
               </div>
@@ -734,19 +843,19 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-6 text-xs">
               <div class="fintech-card p-3.5 rounded-xl">
                 <span class="text-slate-400 block mb-1">รหัสประจำตัว</span>
-                <span id="myProfileCode" class="font-semibold text-white font-mono">-</span>
+                <span id="myProfileCode" class="font-semibold font-mono">-</span>
               </div>
               <div class="fintech-card p-3.5 rounded-xl">
                 <span class="text-slate-400 block mb-1">ตำแหน่งวิทยฐานะ</span>
-                <span id="myProfilePos" class="font-semibold text-white">-</span>
+                <span id="myProfilePos" class="font-semibold">-</span>
               </div>
               <div class="fintech-card p-3.5 rounded-xl">
                 <span class="text-slate-400 block mb-1">สหวิทยาเขต</span>
-                <span id="myProfileDistrict" class="font-semibold text-white">-</span>
+                <span id="myProfileDistrict" class="font-semibold">-</span>
               </div>
               <div class="fintech-card p-3.5 rounded-xl">
                 <span class="text-slate-400 block mb-1">เบอร์โทรศัพท์</span>
-                <span id="myProfilePhone" class="font-semibold text-white font-mono">-</span>
+                <span id="myProfilePhone" class="font-semibold font-mono">-</span>
               </div>
               <div class="fintech-card p-3.5 rounded-xl sm:col-span-2">
                 <span class="text-slate-400 block mb-1">อายุราชการคงเหลือ</span>
@@ -759,7 +868,7 @@
         <!-- ================= TAB: USERS ================= -->
         <section id="sec-users" class="hidden space-y-4 animate-fade-in">
           <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between fintech-panel p-4 rounded-2xl border border-white/10">
-            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <h3 class="text-sm font-bold flex items-center gap-2">
               <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> รายชื่อผู้ใช้งานในระบบทั้งหมด
             </h3>
             <button onclick="openUserModal()" class="gradient-btn px-3.5 py-2 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md border border-white/15">
@@ -790,7 +899,7 @@
         <section id="sec-logs" class="hidden space-y-4 animate-fade-in">
           <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between fintech-panel p-4 rounded-2xl border border-white/10">
             <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <h3 class="text-sm font-bold flex items-center gap-2">
                 <i data-lucide="history" class="w-4 h-4 text-amber-400"></i> บันทึกประวัติการเข้าใช้งานระบบ (Activity Logs)
               </h3>
               <p class="text-xs text-slate-400 font-light">ติดตามการเข้าสู่ระบบและกิจกรรมของผู้ใช้ทุกคน</p>
@@ -831,13 +940,79 @@
     </div>
   </div>
 
-  <!-- ================= 4. ALL MODALS ================= -->
+  <!-- ================= MOBILE BOTTOM NAVIGATION ================= -->
+  <div id="mobileBottomNav" class="hidden md:hidden fixed bottom-0 left-0 right-0 fintech-panel px-3 py-1.5 z-30 border-t border-white/10">
+    <div class="flex items-center justify-around">
+      <button onclick="navigate('dashboard')" class="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-white text-[10px]">
+        <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5 text-sky-400"></i>
+        <span>แดชบอร์ด</span>
+      </button>
+      <button onclick="navigate('employees')" class="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-white text-[10px]">
+        <i data-lucide="users" class="w-5 h-5 mb-0.5 text-rose-400"></i>
+        <span>ครูพละ</span>
+      </button>
+      <div id="mobileAdminActionBtnWrapper" class="hidden">
+        <button onclick="toggleMobileAdminPanel()" class="gradient-btn w-12 h-12 -mt-5 text-white rounded-full flex items-center justify-center shadow-lg border border-white/20 active:scale-95 transition">
+          <i data-lucide="menu" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <button onclick="navigate('district-matrix')" class="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-white text-[10px]">
+        <i data-lucide="network" class="w-5 h-5 mb-0.5 text-emerald-400"></i>
+        <span>สหเขต</span>
+      </button>
+      <button onclick="navigate('profile')" class="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-white text-[10px]">
+        <i data-lucide="user" class="w-5 h-5 mb-0.5 text-cyan-400"></i>
+        <span>ของฉัน</span>
+      </button>
+    </div>
+  </div>
 
+  <!-- MOBILE ADMIN SLIDE-UP PANEL -->
+  <div id="mobileAdminPanel" class="hidden fixed inset-0 z-40 bg-slate-950/80 backdrop-blur-xl flex flex-col justify-end">
+    <div onclick="toggleMobileAdminPanel()" class="flex-1"></div>
+    <div class="fintech-panel rounded-t-3xl p-5 border-t border-white/20 max-h-[80vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 bg-rose-500/20 text-rose-300 rounded-lg flex items-center justify-center border border-rose-500/30">
+            <i data-lucide="layout-grid" class="w-4 h-4"></i>
+          </div>
+          <span class="text-xs font-bold text-white">เมนูจัดการระบบ (Admin Panel)</span>
+        </div>
+        <button onclick="toggleMobileAdminPanel()" class="p-1.5 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button onclick="navigate('users'); toggleMobileAdminPanel();" class="p-3.5 fintech-card rounded-2xl text-left flex flex-col gap-2">
+          <i data-lucide="shield-check" class="w-5 h-5 text-purple-400"></i>
+          <div><p class="text-xs font-semibold">จัดการผู้ใช้งาน</p><p class="text-[10px] text-slate-400">กำหนดสิทธิ์ & รหัสผ่าน</p></div>
+        </button>
+        <button onclick="navigate('logs'); toggleMobileAdminPanel();" class="p-3.5 fintech-card rounded-2xl text-left flex flex-col gap-2">
+          <i data-lucide="history" class="w-5 h-5 text-amber-400"></i>
+          <div><p class="text-xs font-semibold">ประวัติการใช้งาน</p><p class="text-[10px] text-slate-400">Logs ระบบทั้งหมด</p></div>
+        </button>
+        <button onclick="openEmployeeModal(); toggleMobileAdminPanel();" class="p-3.5 fintech-card rounded-2xl text-left flex flex-col gap-2">
+          <i data-lucide="user-plus" class="w-5 h-5 text-emerald-400"></i>
+          <div><p class="text-xs font-semibold">เพิ่มครูพละ</p><p class="text-[10px] text-slate-400">บันทึกข้อมูลบุคลากร</p></div>
+        </button>
+        <button onclick="openSettingsModal(); toggleMobileAdminPanel();" class="p-3.5 fintech-card rounded-2xl text-left flex flex-col gap-2">
+          <i data-lucide="settings" class="w-5 h-5 text-sky-400"></i>
+          <div><p class="text-xs font-semibold">ตั้งค่าระบบ</p><p class="text-[10px] text-slate-400">โลโก้ & ราคาเสื้อ</p></div>
+        </button>
+        <button onclick="openLogoutModal(); toggleMobileAdminPanel();" class="p-3.5 bg-rose-500/10 hover:bg-rose-500/20 rounded-2xl border border-rose-500/20 text-left flex flex-col gap-2 col-span-2">
+          <i data-lucide="log-out" class="w-5 h-5 text-rose-400"></i>
+          <div><p class="text-xs font-semibold text-rose-300">ออกจากระบบ</p><p class="text-[10px] text-rose-400/80">สิ้นสุดเซสชัน</p></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALS -->
   <!-- MODAL: IMAGE CROPPER -->
   <div id="modalCropper" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-lg w-full p-6 border border-white/20 shadow-2xl space-y-4">
       <div class="flex items-center justify-between border-b border-white/10 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+        <h3 class="text-sm font-bold flex items-center gap-2">
           <i data-lucide="crop" class="w-4 h-4 text-sky-400"></i> ครอปตัดรูปภาพประจำตัว (1:1 Square)
         </h3>
         <button onclick="closeCropperModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -857,18 +1032,18 @@
     <div class="fintech-panel rounded-3xl max-w-sm w-full p-6 border border-white/20 shadow-2xl text-center space-y-4 animate-fade-in text-xs">
       <div class="w-28 h-28 mx-auto rounded-3xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 overflow-hidden border-2 border-white/20 shadow-2xl flex items-center justify-center">
         <img id="detailAvatarImg" class="w-full h-full object-cover">
-        <span id="detailAvatarPlaceholder" class="text-2xl font-bold text-white">PE</span>
+        <span id="detailAvatarPlaceholder" class="text-2xl font-bold">PE</span>
       </div>
       <div>
-        <h3 id="detailFullName" class="text-base font-bold text-white mt-1">-</h3>
+        <h3 id="detailFullName" class="text-base font-bold mt-1">-</h3>
         <p id="detailPosition" class="text-rose-400 font-medium">-</p>
-        <p id="detailSchool" class="text-slate-300 mt-0.5">-</p>
+        <p id="detailSchool" class="text-slate-400 mt-0.5">-</p>
       </div>
-      <div class="p-3.5 bg-white/5 rounded-2xl text-left border border-white/10 space-y-1.5 font-light text-slate-300 text-[11px]">
-        <p><strong>รหัสประจำตัว:</strong> <span id="detailCode" class="font-mono text-white">-</span></p>
-        <p><strong>สหวิทยาเขต:</strong> <span id="detailDistrict" class="text-white">-</span></p>
-        <p><strong>เบอร์โทรศัพท์:</strong> <span id="detailPhone" class="font-mono text-white">-</span></p>
-        <p><strong>วันเกษียณ:</strong> <span id="detailRetire" class="font-mono text-amber-300">-</span></p>
+      <div class="p-3.5 bg-white/5 rounded-2xl text-left border border-white/10 space-y-1.5 font-light text-[11px]">
+        <p><strong>รหัสประจำตัว:</strong> <span id="detailCode" class="font-mono">-</span></p>
+        <p><strong>สหวิทยาเขต:</strong> <span id="detailDistrict">-</span></p>
+        <p><strong>เบอร์โทรศัพท์:</strong> <span id="detailPhone" class="font-mono">-</span></p>
+        <p><strong>วันเกษียณ:</strong> <span id="detailRetire" class="font-mono text-amber-400">-</span></p>
       </div>
       <button type="button" onclick="closeDetailModal()" class="w-full py-2 fintech-card hover:bg-white/10 text-slate-200 rounded-xl font-medium">ปิดหน้าต่าง</button>
     </div>
@@ -878,7 +1053,7 @@
   <div id="modalEmployee" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-white/20 shadow-2xl">
       <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-        <h3 id="modalEmployeeTitle" class="text-sm font-bold text-white">เพิ่มข้อมูลครูพละ</h3>
+        <h3 id="modalEmployeeTitle" class="text-sm font-bold">เพิ่มข้อมูลครูพละ</h3>
         <button onclick="closeEmployeeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form id="employeeForm" onsubmit="handleSaveEmployee(event)" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1 text-xs">
@@ -997,7 +1172,7 @@
   <div id="modalShirtOrder" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-white/20 shadow-2xl text-xs">
       <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-        <h3 id="modalShirtOrderTitle" class="text-sm font-bold text-white flex items-center gap-2">
+        <h3 id="modalShirtOrderTitle" class="text-sm font-bold flex items-center gap-2">
           <i data-lucide="shirt" class="w-4 h-4 text-rose-400"></i> สั่งจองเสื้อบุคลากรครูพละ
         </h3>
         <button onclick="closeShirtOrderModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1076,7 +1251,7 @@
   <div id="modalBulkImport" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-md w-full p-6 border border-white/20 shadow-2xl text-xs space-y-4">
       <div class="flex items-center justify-between border-b border-white/10 pb-3">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+        <h3 class="text-sm font-bold flex items-center gap-2">
           <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> นำเข้าข้อมูลบุคลากรหลายรายการ
         </h3>
         <button onclick="closeBulkImportModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1084,11 +1259,11 @@
       <p class="text-slate-300 font-light">เลือกไฟล์ .CSV เพื่อนำเข้าข้อมูลบุคลากรเข้าสู่ระบบ</p>
       <div class="border-2 border-dashed border-white/20 rounded-2xl p-6 text-center hover:border-sky-400 transition cursor-pointer" onclick="document.getElementById('bulkCsvFileInput').click()">
         <i data-lucide="file-spreadsheet" class="w-8 h-8 text-sky-400 mx-auto mb-2"></i>
-        <span class="text-slate-300 font-medium block">คลิกเพื่อเลือกไฟล์ CSV</span>
+        <span class="font-medium block">คลิกเพื่อเลือกไฟล์ CSV</span>
         <span id="bulkFileNameDisplay" class="text-[10px] text-slate-500 mt-1 block font-mono">UTF-8 Encoded .csv</span>
         <input type="file" id="bulkCsvFileInput" accept=".csv" class="hidden" onchange="handleBulkFileSelect(event)">
       </div>
-      <div id="bulkImportPreview" class="hidden p-3 bg-white/5 rounded-xl border border-white/10 text-[11px] text-slate-300 max-h-36 overflow-y-auto custom-scroll"></div>
+      <div id="bulkImportPreview" class="hidden p-3 bg-white/5 rounded-xl border border-white/10 text-[11px] max-h-36 overflow-y-auto custom-scroll"></div>
       <div class="pt-2 flex items-center justify-end gap-2 border-t border-white/10">
         <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
         <button type="button" id="btnExecuteBulkImport" onclick="executeBulkImport()" disabled class="gradient-btn px-5 py-2 disabled:opacity-50 text-white rounded-xl font-semibold border border-white/15">นำเข้าข้อมูล</button>
@@ -1096,11 +1271,11 @@
     </div>
   </div>
 
-  <!-- MODAL: SETTINGS (FOOTER & APP CONFIG) -->
+  <!-- MODAL: SETTINGS -->
   <div id="modalSettings" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-md w-full overflow-hidden border border-white/20 shadow-2xl">
       <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+        <h3 class="text-sm font-bold flex items-center gap-2">
           <i data-lucide="settings" class="w-4 h-4 text-sky-400"></i> ตั้งค่าข้อมูลระบบ & Footer
         </h3>
         <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
@@ -1148,7 +1323,7 @@
   <div id="modalUser" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-md w-full overflow-hidden border border-white/20 shadow-2xl">
       <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
-        <h3 id="modalUserTitle" class="text-sm font-bold text-white">เพิ่มผู้ใช้งานระบบ</h3>
+        <h3 id="modalUserTitle" class="text-sm font-bold">เพิ่มผู้ใช้งานระบบ</h3>
         <button onclick="closeUserModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
       </div>
       <form id="userForm" onsubmit="handleSaveUser(event)" class="p-6 space-y-3.5 text-xs">
@@ -1204,8 +1379,8 @@
       <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-500/30">
         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
       </div>
-      <h3 class="text-sm font-bold text-white">ต้องการออกจากระบบ?</h3>
-      <p class="text-xs text-slate-300 mt-1 mb-5 font-light">คุณจะต้องเข้าสู่ระบบใหม่อีกครั้งเพื่อจัดการข้อมูล</p>
+      <h3 class="text-sm font-bold">ต้องการออกจากระบบ?</h3>
+      <p class="text-xs text-slate-400 mt-1 mb-5 font-light">คุณจะต้องเข้าสู่ระบบใหม่อีกครั้งเพื่อจัดการข้อมูล</p>
       <div class="flex items-center gap-2">
         <button onclick="closeLogoutModal()" class="flex-1 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl text-xs font-medium">ยกเลิก</button>
         <button onclick="confirmLogout()" class="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-rose-600/30">ออกจากระบบ</button>
@@ -1213,9 +1388,7 @@
     </div>
   </div>
 
-  <!-- ========================================================== -->
-  <!-- JAVASCRIPT APPLICATION LOGIC                               -->
-  <!-- ========================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
   <script>
     // 1. SUPABASE CONFIGURATION
     const SUPABASE_URL = 'https://btoqlgrcezwxgxakzjbc.supabase.co';
@@ -1265,6 +1438,7 @@
     let bulkParsedRows = [];
     let currentShirtTab = 'all';
     let cropperInstance = null;
+    let isSidebarCollapsed = false;
 
     let appSettings = {
       app_name: 'ครูพละ สพม.บุรีรัมย์',
@@ -1280,7 +1454,58 @@
     let landingChartDistrict = null;
     let landingChartPosition = null;
 
-    // 4. DROPDOWN & DATEPICKER FUNCTIONS (DECLARED BEFORE CALLS)
+    // 4. THEME & SIDEBAR TOGGLE
+    function toggleTheme() {
+      const root = document.getElementById('htmlRoot');
+      const isDark = root.classList.contains('dark');
+      if (isDark) {
+        root.classList.remove('dark');
+        root.classList.add('light');
+        localStorage.setItem('pe_theme', 'light');
+      } else {
+        root.classList.remove('light');
+        root.classList.add('dark');
+        localStorage.setItem('pe_theme', 'dark');
+      }
+      updateThemeIcons();
+    }
+
+    function initTheme() {
+      const savedTheme = localStorage.getItem('pe_theme') || 'dark';
+      const root = document.getElementById('htmlRoot');
+      if (savedTheme === 'light') {
+        root.classList.remove('dark');
+        root.classList.add('light');
+      } else {
+        root.classList.remove('light');
+        root.classList.add('dark');
+      }
+      updateThemeIcons();
+    }
+
+    function updateThemeIcons() {
+      const isDark = document.getElementById('htmlRoot').classList.contains('dark');
+      const icons = ['themeToggleIcon', 'landingThemeIcon'];
+      icons.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      });
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function toggleSidebarCollapse() {
+      const sidebar = document.getElementById('desktopSidebar');
+      if (!sidebar) return;
+      isSidebarCollapsed = !isSidebarCollapsed;
+      if (isSidebarCollapsed) {
+        sidebar.classList.add('sidebar-collapsed');
+      } else {
+        sidebar.classList.remove('sidebar-collapsed');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // 5. DROPDOWN & DATEPICKER INITIALIZERS
     function initDropdownOptions() {
       const filterDistrict = document.getElementById('filterDistrictSelect');
       const formDistrict = document.getElementById('empFormDistrict');
@@ -1446,8 +1671,9 @@
       return { isExpired: false, years, months, days };
     }
 
-    // 5. DOM CONTENT LOADED EVENT
+    // 6. DOM CONTENT LOADED EVENT
     window.addEventListener('DOMContentLoaded', async () => {
+      initTheme();
       lucide.createIcons();
       initDropdownOptions();
       initThaiDatePicker();
@@ -1503,7 +1729,7 @@
           const session = JSON.parse(sessionData);
           const loginTime = session.loginTime || 0;
           const now = Date.now();
-          const maxSessionDuration = 24 * 60 * 60 * 1000; // 24 ชั่วโมง Auto-Logout
+          const maxSessionDuration = 24 * 60 * 60 * 1000;
 
           if (now - loginTime > maxSessionDuration) {
             alert('เซสชันการเข้าใช้งานหมดอายุ (ครบ 24 ชั่วโมง) กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
@@ -1598,9 +1824,9 @@
 
         tr.innerHTML = `
           <td class="py-3 px-4 text-slate-400">${dateStr}</td>
-          <td class="py-3 px-4 font-semibold text-white">${log.full_name} (@${log.username})</td>
+          <td class="py-3 px-4 font-semibold">${log.full_name} (@${log.username})</td>
           <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] ${roleBadge}">${log.role.toUpperCase()}</span></td>
-          <td class="py-3 px-4 text-sky-300">${log.action}</td>
+          <td class="py-3 px-4 text-sky-400">${log.action}</td>
           <td class="py-3 px-4 text-[10px] text-slate-400 truncate max-w-xs">${log.user_agent || '-'}</td>
         `;
         tbody.appendChild(tr);
@@ -1658,14 +1884,14 @@
 
         const avatarHTML = u.avatar_url 
           ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded-full object-cover border border-white/20">`
-          : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-xs border border-white/10">${u.full_name.charAt(0)}</div>`;
+          : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500/20 to-sky-500/20 flex items-center justify-center font-bold text-xs border border-white/10">${u.full_name.charAt(0)}</div>`;
 
         tr.innerHTML = `
           <td class="py-3 px-4 flex items-center gap-2.5">
             ${avatarHTML}
-            <span class="font-medium text-white">${u.full_name}</span>
+            <span class="font-medium">${u.full_name}</span>
           </td>
-          <td class="py-3 px-4 font-mono text-slate-300">${u.username}</td>
+          <td class="py-3 px-4 font-mono text-slate-400">${u.username}</td>
           <td class="py-3 px-4">
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
               u.role === 'admin' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
@@ -1783,6 +2009,88 @@
       }
     }
 
+    // 7. DISTRICT MATRIX REPORT LOGIC (9 สหวิทยาเขต)
+    function renderDistrictMatrixTable() {
+      const tbody = document.getElementById('districtMatrixTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const curYear = new Date().getFullYear();
+
+      Object.keys(DISTRICT_SCHOOLS_MAP).forEach(districtName => {
+        const schools = DISTRICT_SCHOOLS_MAP[districtName] || [];
+        const empInDistrict = employeeList.filter(e => e.district === districtName);
+        const countMale = empInDistrict.filter(e => (e.gender || 'ชาย') === 'ชาย').length;
+        const countFemale = empInDistrict.filter(e => e.gender === 'หญิง').length;
+
+        const orderedEmpIds = new Set(shirtOrderList.map(o => o.employee_id));
+        const countOrdered = empInDistrict.filter(e => orderedEmpIds.has(e.id)).length;
+        const countUnordered = empInDistrict.length - countOrdered;
+
+        const countRetireSoon = empInDistrict.filter(e => e.retire_date && new Date(e.retire_date).getFullYear() === curYear).length;
+
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+        tr.innerHTML = `
+          <td class="py-3.5 px-4 font-semibold">${districtName}</td>
+          <td class="py-3.5 px-4 text-center font-mono">${schools.length}</td>
+          <td class="py-3.5 px-4 text-center font-bold text-sky-400 font-mono">${empInDistrict.length}</td>
+          <td class="py-3.5 px-4 text-center font-mono text-blue-300">${countMale}</td>
+          <td class="py-3.5 px-4 text-center font-mono text-pink-300">${countFemale}</td>
+          <td class="py-3.5 px-4 text-center font-mono text-emerald-400 font-medium">${countOrdered}</td>
+          <td class="py-3.5 px-4 text-center font-mono text-rose-400 font-medium">${countUnordered}</td>
+          <td class="py-3.5 px-4 text-center font-mono text-amber-400 font-bold">${countRetireSoon}</td>
+          <td class="py-3.5 px-4 text-center">
+            <button onclick="filterByDistrictDirectly('${districtName}')" class="px-2.5 py-1 rounded-lg bg-sky-500/20 text-sky-300 hover:bg-sky-500/30 text-[11px] transition">
+              ดูข้อมูลครู
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function filterByDistrictDirectly(districtName) {
+      navigate('employees');
+      const filterDist = document.getElementById('filterDistrictSelect');
+      if (filterDist) {
+        filterDist.value = districtName;
+        onFilterDistrictChange();
+      }
+    }
+
+    function exportDistrictMatrixExcel() {
+      const curYear = new Date().getFullYear();
+      const data = Object.keys(DISTRICT_SCHOOLS_MAP).map(districtName => {
+        const schools = DISTRICT_SCHOOLS_MAP[districtName] || [];
+        const empInDistrict = employeeList.filter(e => e.district === districtName);
+        const countMale = empInDistrict.filter(e => (e.gender || 'ชาย') === 'ชาย').length;
+        const countFemale = empInDistrict.filter(e => e.gender === 'หญิง').length;
+        const orderedEmpIds = new Set(shirtOrderList.map(o => o.employee_id));
+        const countOrdered = empInDistrict.filter(e => orderedEmpIds.has(e.id)).length;
+        const countUnordered = empInDistrict.length - countOrdered;
+        const countRetireSoon = empInDistrict.filter(e => e.retire_date && new Date(e.retire_date).getFullYear() === curYear).length;
+
+        return {
+          "สหวิทยาเขต": districtName,
+          "จำนวนโรงเรียน": schools.length,
+          "ครูพละทั้งหมด (คน)": empInDistrict.length,
+          "ครูชาย (คน)": countMale,
+          "ครูหญิง (คน)": countFemale,
+          "สั่งจองเสื้อแล้ว (คน)": countOrdered,
+          "ยังไม่สั่งจองเสื้อ (คน)": countUnordered,
+          "เกษียณปีนี้ (คน)": countRetireSoon
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "รายงานแยกสหเขต");
+      XLSX.writeFile(wb, `รายงานสารสนเทศครูพละ_แยกตามสหวิทยาเขต_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    // 8. NAVIGATION ROUTER
     function navigate(section) {
       const landingView = document.getElementById('landingView');
       const mainAppView = document.getElementById('mainAppView');
@@ -1792,7 +2100,7 @@
       if (mainAppView) mainAppView.classList.remove('hidden');
       if (mobileBottomNav) mobileBottomNav.classList.remove('hidden');
 
-      const sections = ['dashboard', 'employees', 'shirts', 'reports', 'profile', 'users', 'logs'];
+      const sections = ['dashboard', 'employees', 'district-matrix', 'shirts', 'reports', 'profile', 'users', 'logs'];
       sections.forEach(s => {
         const el = document.getElementById(`sec-${s}`);
         if (el) el.classList.add('hidden');
@@ -1809,6 +2117,7 @@
       const titles = {
         'dashboard': 'แดชบอร์ดภาพรวม',
         'employees': 'ข้อมูลบุคลากรครูพละ สพม.บุรีรัมย์',
+        'district-matrix': 'รายงานสารสนเทศแยกตามสหวิทยาเขต',
         'shirts': 'สั่งจองเสื้อ & รายงานคำสั่งจอง',
         'reports': 'รายงานสถิติและการเกษียณอายุราชการ',
         'profile': 'ข้อมูลส่วนตัวของฉัน',
@@ -1819,6 +2128,7 @@
       if (titleEl && titles[section]) titleEl.innerText = titles[section];
 
       if (section === 'dashboard') renderCharts();
+      if (section === 'district-matrix') renderDistrictMatrixTable();
       if (section === 'shirts') renderShirtTable();
       if (section === 'reports') renderRetirementReport();
       if (section === 'profile') renderMyProfile();
@@ -2230,12 +2540,12 @@
 
         tr.innerHTML = `
           <td class="py-3 px-4">
-            <div class="font-semibold text-white cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${item.emp.prefix || ''}${item.emp.full_name}', '${item.emp.position}', '${item.emp.school}', '${item.emp.district}', '${item.emp.emp_code}', '${item.emp.phone || '-'}', '${item.emp.retire_date || '-'}', '${item.emp.avatar_url || ''}')">${item.emp.prefix || ''}${item.emp.full_name}</div>
+            <div class="font-semibold cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${item.emp.prefix || ''}${item.emp.full_name}', '${item.emp.position}', '${item.emp.school}', '${item.emp.district}', '${item.emp.emp_code}', '${item.emp.phone || '-'}', '${item.emp.retire_date || '-'}', '${item.emp.avatar_url || ''}')">${item.emp.prefix || ''}${item.emp.full_name}</div>
             <div class="text-[10px] text-rose-300 font-mono">${item.emp.emp_code}</div>
           </td>
           <td class="py-3 px-4">${item.emp.gender || 'ชาย'}</td>
           <td class="py-3 px-4">
-            <div class="text-slate-200">${item.emp.school}</div>
+            <div>${item.emp.school}</div>
             <div class="text-[10px] text-sky-400">${item.emp.district}</div>
           </td>
           <td class="py-3 px-4">${statusBadge}</td>
@@ -2427,9 +2737,9 @@
         const bThYear = emp.birth_date ? new Date(emp.birth_date).getFullYear() + 543 : '-';
         tr.innerHTML = `
           <td class="py-3 px-4 font-mono text-slate-400">${emp.emp_code}</td>
-          <td class="py-3 px-4 font-semibold text-white cursor-pointer hover:text-sky-300" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</td>
+          <td class="py-3 px-4 font-semibold cursor-pointer hover:text-sky-300" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</td>
           <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
-          <td class="py-3 px-4 text-slate-300">${emp.school}</td>
+          <td class="py-3 px-4 text-slate-400">${emp.school}</td>
           <td class="py-3 px-4 text-sky-400">${emp.district}</td>
           <td class="py-3 px-4 font-mono text-slate-400">${bThYear}</td>
           <td class="py-3 px-4 font-mono text-rose-400 font-bold">30 ก.ย. ${selectedYear + 543}</td>
@@ -2490,7 +2800,7 @@
 
         const retireThYear = emp.retire_date ? new Date(emp.retire_date).getFullYear() + 543 : '-';
         let avatarHTML = `
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-xs border border-white/10 overflow-hidden shadow-inner shrink-0 cursor-pointer hover:scale-105 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 flex items-center justify-center font-bold text-xs border border-white/10 overflow-hidden shadow-inner shrink-0 cursor-pointer hover:scale-105 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">
             ${emp.avatar_url ? `<img src="${emp.avatar_url}" class="w-full h-full object-cover"/>` : `<span>${emp.full_name.charAt(0)}</span>`}
           </div>
         `;
@@ -2498,14 +2808,14 @@
         tr.innerHTML = `
           <td class="py-3 px-4">${avatarHTML}</td>
           <td class="py-3 px-4">
-            <div class="font-semibold text-white cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</div>
+            <div class="font-semibold cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</div>
             <div class="text-[10px] text-rose-300 font-mono">${emp.emp_code}</div>
           </td>
           <td class="py-3 px-4">${emp.gender || 'ชาย'}</td>
           <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
-          <td class="py-3 px-4"><div class="text-slate-200">${emp.school}</div><div class="text-[10px] text-sky-400">${emp.district}</div></td>
+          <td class="py-3 px-4"><div>${emp.school}</div><div class="text-[10px] text-sky-400">${emp.district}</div></td>
           <td class="py-3 px-4">${remainingBadge}</td>
-          <td class="py-3 px-4 font-mono text-slate-300 text-[11px]">${retireThYear !== '-' ? `30 ก.ย. ${retireThYear}` : '-'}</td>
+          <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">${retireThYear !== '-' ? `30 ก.ย. ${retireThYear}` : '-'}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center gap-1.5">
               ${canEdit ? `<button onclick="editEmployee('${emp.id}')" class="p-1.5 text-sky-400 hover:bg-white/10 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>` : ''}
@@ -2667,6 +2977,7 @@
         renderEmployeeTable();
         renderShirtTable();
         renderRetirementReport();
+        renderDistrictMatrixTable();
         if (currentUser && currentUser.role === 'admin') renderUserTable();
 
       } catch (err) {
