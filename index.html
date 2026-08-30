@@ -1,0 +1,3037 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ระบบบันทึกข้อมูลบุคลากรครูพละ สพม.บุรีรัมย์</title>
+
+  <!-- Sleek Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Sarabun', 'sans-serif'],
+          },
+          colors: {
+            fintech: {
+              pink: '#f43f5e',
+              sky: '#0284c7',
+              navy: '#0f172a',
+              card: '#1e293b'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Cropper.js for Touch/Multi-Device Image Cropping -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- SheetJS for Professional Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', 'Sarabun', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      background: radial-gradient(at 0% 0%, rgba(244, 63, 94, 0.12) 0, transparent 45%), 
+                  radial-gradient(at 100% 0%, rgba(2, 132, 199, 0.15) 0, transparent 45%), 
+                  radial-gradient(at 50% 100%, rgba(99, 102, 241, 0.1) 0, transparent 50%),
+                  #090d16;
+      background-attachment: fixed;
+      min-height: 100vh;
+    }
+
+    .fintech-panel {
+      background: rgba(30, 41, 59, 0.6);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    }
+    .fintech-card {
+      background: rgba(255, 255, 255, 0.035);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4);
+    }
+    .fintech-card-hover {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .fintech-card-hover:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-2px);
+      box-shadow: 0 15px 30px -5px rgba(2, 132, 199, 0.25);
+    }
+    .glass-input {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      backdrop-filter: blur(10px);
+    }
+    .glass-input:focus {
+      border-color: #38bdf8;
+      outline: none;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
+    }
+
+    .gradient-btn {
+      background: linear-gradient(135deg, #f43f5e 0%, #a855f7 50%, #0284c7 100%);
+      transition: all 0.25s ease;
+    }
+    .gradient-btn:hover {
+      opacity: 0.95;
+      box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.4);
+      transform: translateY(-1px);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #fb7185 0%, #c084fc 50%, #38bdf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen flex flex-col antialiased selection:bg-pink-500 selection:text-white">
+
+  <!-- LOADER OVERLAY -->
+  <div id="globalLoader" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center hidden">
+    <div class="fintech-panel p-6 rounded-3xl flex items-center space-x-4 border border-white/20 shadow-2xl">
+      <div class="w-8 h-8 border-3 border-sky-400 border-t-transparent rounded-full animate-spin"></div>
+      <span id="globalLoaderText" class="text-sm font-medium text-slate-200 tracking-wide">กำลังประมวลผลข้อมูล...</span>
+    </div>
+  </div>
+
+  <!-- ================= 1. LANDING PAGE ================= -->
+  <div id="landingView" class="min-h-screen flex flex-col">
+    <header class="fintech-panel sticky top-0 z-30 px-4 sm:px-8 py-3.5 flex items-center justify-between border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div id="landingLogoContainer" class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-sky-500 flex items-center justify-center text-white shadow-lg overflow-hidden shrink-0 border border-white/20">
+          <i data-lucide="trophy" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="text-sm sm:text-base font-bold text-white tracking-wide flex items-center gap-2">
+            <span id="landingAppName">ครูพละ สพม.บุรีรัมย์</span>
+            <span class="text-[10px] px-2 py-0.5 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 font-mono">Verified</span>
+          </h1>
+          <p id="landingAppSubName" class="text-[11px] text-slate-400 font-light">สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์</p>
+        </div>
+      </div>
+      <div>
+        <button onclick="openLoginModal()" class="gradient-btn px-4 py-2 rounded-xl text-white text-xs font-semibold shadow-lg active:scale-95 flex items-center gap-2 border border-white/15">
+          <i data-lucide="log-in" class="w-4 h-4"></i> เข้าสู่ระบบ
+        </button>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+      <div class="fintech-panel rounded-3xl p-6 sm:p-10 relative overflow-hidden flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div class="space-y-3 max-w-2xl text-center sm:text-left">
+          <span class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-medium bg-rose-500/10 text-rose-300 border border-rose-500/25">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-sky-400"></i> ศูนย์สารสนเทศและระบบสั่งจองเสื้อทางการ
+          </span>
+          <h2 class="text-2xl sm:text-4xl font-extrabold gradient-text leading-tight tracking-tight">
+            ระบบบันทึกข้อมูลบุคลากรและกิจกรรม<br class="hidden sm:block"> ครูพลศึกษา สพม.บุรีรัมย์
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 font-light leading-relaxed">
+            บริหารจัดการฐานข้อมูลบุคลากร ติดตามการเกษียณอายุราชการ และระบบสั่งจองเสื้อพร้อมรายงานสรุปยอดอัจฉริยะ
+          </p>
+          <div class="pt-2 flex flex-wrap gap-3 justify-center sm:justify-start">
+            <button onclick="openLoginModal()" class="gradient-btn px-5 py-2.5 rounded-xl text-white font-bold text-xs shadow-xl flex items-center gap-2 border border-white/15">
+              <i data-lucide="layout-dashboard" class="w-4 h-4"></i> เข้าสู่ศูนย์จัดการข้อมูล
+            </button>
+          </div>
+        </div>
+        <div class="w-28 h-28 sm:w-36 sm:h-36 rounded-3xl bg-gradient-to-br from-rose-500/15 via-sky-500/15 to-transparent border border-white/15 flex items-center justify-center p-6 shadow-inner shrink-0">
+          <i data-lucide="wallet" class="w-full h-full text-sky-300/80"></i>
+        </div>
+      </div>
+
+      <!-- Stats Metrics -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-5">
+        <div class="fintech-card fintech-card-hover p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between text-sky-400 mb-2">
+            <span class="text-xs font-medium text-slate-400">ครูพละทั้งหมด</span>
+            <i data-lucide="users" class="w-5 h-5 bg-sky-500/10 p-1 rounded-lg"></i>
+          </div>
+          <p id="landingTotalTeachers" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <span class="text-[10px] text-slate-400">อัตรากำลังในสังกัด</span>
+        </div>
+
+        <div class="fintech-card fintech-card-hover p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between text-rose-400 mb-2">
+            <span class="text-xs font-medium text-slate-400">สหวิทยาเขต</span>
+            <i data-lucide="map-pin" class="w-5 h-5 bg-rose-500/10 p-1 rounded-lg"></i>
+          </div>
+          <p id="landingTotalDistricts" class="text-2xl sm:text-3xl font-bold text-white font-mono">9</p>
+          <span class="text-[10px] text-slate-400">เขตพื้นที่บริการ</span>
+        </div>
+
+        <div class="fintech-card fintech-card-hover p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between text-purple-400 mb-2">
+            <span class="text-xs font-medium text-slate-400">ยอดสั่งจองเสื้อ</span>
+            <i data-lucide="shopping-bag" class="w-5 h-5 bg-purple-500/10 p-1 rounded-lg"></i>
+          </div>
+          <p id="landingTotalShirts" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <span class="text-[10px] text-slate-400">ตัว (รวมยอดทั้งหมด)</span>
+        </div>
+
+        <div class="fintech-card fintech-card-hover p-4 sm:p-5 rounded-2xl">
+          <div class="flex items-center justify-between text-amber-400 mb-2">
+            <span class="text-xs font-medium text-slate-400">เกษียณปีนี้</span>
+            <i data-lucide="hourglass" class="w-5 h-5 bg-amber-500/10 p-1 rounded-lg"></i>
+          </div>
+          <p id="landingRetireSoon" class="text-2xl sm:text-3xl font-bold text-white font-mono">0</p>
+          <span class="text-[10px] text-slate-400">ครบวาระปีงบประมาณ</span>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+        <div class="fintech-panel p-5 sm:p-6 rounded-3xl">
+          <h3 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2 mb-4 tracking-wide">
+            <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> สัดส่วนครูพละตาม 9 สหวิทยาเขต
+          </h3>
+          <div class="h-64 relative flex items-center justify-center">
+            <canvas id="landingDistrictChart"></canvas>
+          </div>
+        </div>
+
+        <div class="fintech-panel p-5 sm:p-6 rounded-3xl">
+          <h3 class="text-xs sm:text-sm font-bold text-slate-100 flex items-center gap-2 mb-4 tracking-wide">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-rose-400"></i> สถิติตำแหน่งและวิทยฐานะ
+          </h3>
+          <div class="h-64 relative flex items-center justify-center">
+            <canvas id="landingPositionChart"></canvas>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Public Footer -->
+    <footer class="mt-auto py-6 border-t border-white/10 fintech-panel text-center text-xs text-slate-400 space-y-1">
+      <p id="footerMainText">© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์</p>
+      <p id="footerDevText" class="text-[11px] text-slate-500">พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์</p>
+    </footer>
+  </div>
+
+  <!-- ================= 2. LOGIN MODAL (PASSWORD TOGGLE) ================= -->
+  <div id="modalLogin" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-sm w-full p-6 sm:p-8 border border-white/15 shadow-2xl relative">
+      <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full transition">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+      
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 to-sky-500 flex items-center justify-center text-white mx-auto mb-3 shadow-lg border border-white/20">
+          <i data-lucide="fingerprint" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white tracking-tight">ระบบยืนยันตัวตน</h3>
+        <p class="text-xs text-slate-300 mt-1 font-light">สพม.บุรีรัมย์</p>
+      </div>
+
+      <div id="loginAlert" class="hidden mb-4 p-3 rounded-xl text-xs font-medium bg-rose-500/20 text-rose-300 border border-rose-500/30 flex items-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4 shrink-0"></i>
+        <span id="loginAlertText"></span>
+      </div>
+
+      <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block text-slate-300 mb-1 font-medium">ชื่อผู้ใช้งาน (Username)</label>
+          <input type="text" id="loginUsername" required placeholder="admin, hr01, หรือ รหัสประจำตัว" class="glass-input w-full px-3 py-2.5 rounded-xl text-xs">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1 font-medium">รหัสผ่าน (Password)</label>
+          <div class="relative">
+            <input type="password" id="loginPassword" required placeholder="••••••••" class="glass-input w-full pl-3 pr-10 py-2.5 rounded-xl text-xs">
+            <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
+              <i id="loginEyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <button type="submit" class="gradient-btn w-full py-2.5 rounded-xl text-white font-bold text-xs shadow-lg border border-white/15">
+          เข้าสู่ระบบความปลอดภัย
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= 3. MAIN DASHBOARD APP ================= -->
+  <div id="mainAppView" class="hidden flex-1 flex flex-col md:flex-row min-h-screen">
+    <!-- Desktop Sidebar -->
+    <aside id="desktopSidebar" class="hidden md:flex flex-col w-64 fintech-panel border-r border-white/10 shrink-0 m-3 rounded-3xl overflow-hidden">
+      <div class="p-5 border-b border-white/10 flex items-center space-x-3">
+        <div id="sidebarLogoContainer" class="w-9 h-9 bg-gradient-to-tr from-rose-500 to-sky-500 rounded-xl flex items-center justify-center text-white shadow-md overflow-hidden shrink-0 border border-white/15">
+          <i data-lucide="activity" class="w-5 h-5"></i>
+        </div>
+        <div class="overflow-hidden">
+          <h2 id="sidebarAppName" class="font-bold text-sm text-white tracking-wide truncate">ครูพละ สพม.บร.</h2>
+          <p id="sidebarAppSubName" class="text-[10px] text-slate-400 truncate font-light">Management Suite</p>
+        </div>
+      </div>
+
+      <!-- User Badge -->
+      <div class="p-3 mx-3 my-3 fintech-card rounded-2xl border border-white/10 flex items-center gap-3">
+        <div id="userAvatarContainer" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-500 to-sky-500 text-white flex items-center justify-center font-bold text-xs shrink-0 overflow-hidden shadow-inner border border-white/15">
+          <span id="userInitial">U</span>
+        </div>
+        <div class="overflow-hidden flex-1">
+          <p id="userNameDisplay" class="text-xs font-semibold text-white truncate">ชื่อ-สกุล</p>
+          <span id="userRoleBadge" class="inline-block text-[9px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 font-mono">ROLE</span>
+        </div>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-3 space-y-1.5 overflow-y-auto custom-scroll">
+        <button onclick="navigate('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-sky-400"></i> แดชบอร์ดภาพรวม
+        </button>
+        <button onclick="navigate('employees')" id="nav-employees" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="users" class="w-4 h-4 text-rose-400"></i> ข้อมูลครูพละ สพม.
+        </button>
+        <button onclick="navigate('shirts')" id="nav-shirts" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="shirt" class="w-4 h-4 text-purple-400"></i> สั่งจองเสื้อ & รายงาน
+        </button>
+        <button onclick="navigate('reports')" id="nav-reports" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="file-bar-chart" class="w-4 h-4 text-amber-400"></i> รายงานสถิติ & เกษียณ
+        </button>
+        <button onclick="navigate('profile')" id="nav-profile" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+          <i data-lucide="user-check" class="w-4 h-4 text-emerald-400"></i> ข้อมูลของฉัน
+        </button>
+        
+        <div id="adminNavGroup" class="pt-3 mt-3 border-t border-white/10 space-y-1.5">
+          <p class="px-3 text-[10px] font-semibold text-rose-300/70 uppercase tracking-wider">ผู้ดูแลระบบ</p>
+          <button onclick="navigate('users')" id="nav-users" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> จัดการผู้ใช้งานระบบ
+          </button>
+          <button onclick="navigate('logs')" id="nav-logs" class="nav-item w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="history" class="w-4 h-4 text-amber-400"></i> ประวัติการเข้าใช้งาน (Logs)
+          </button>
+          <button onclick="openSettingsModal()" class="w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-300 hover:bg-white/10 hover:text-white transition">
+            <i data-lucide="settings" class="w-4 h-4 text-sky-400"></i> ตั้งค่าระบบ
+          </button>
+        </div>
+      </nav>
+
+      <div class="p-3 border-t border-white/10 space-y-1">
+        <button onclick="navigateLanding()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs font-medium transition">
+          <i data-lucide="home" class="w-3.5 h-3.5"></i> หน้าแรกเว็บไซต์
+        </button>
+        <button onclick="openLogoutModal()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-300 hover:text-white rounded-xl text-xs font-medium transition border border-rose-500/20">
+          <i data-lucide="log-out" class="w-3.5 h-3.5"></i> ออกจากระบบ
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6">
+      <header class="fintech-panel px-4 py-3.5 md:px-8 flex items-center justify-between sticky top-0 z-20 border-b border-white/10">
+        <div class="flex items-center gap-3">
+          <div class="md:hidden w-8 h-8 bg-gradient-to-tr from-rose-500 to-sky-500 rounded-lg flex items-center justify-center text-white shadow-sm border border-white/15">
+            <i data-lucide="activity" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h1 id="pageTitle" class="text-sm md:text-base font-bold text-white tracking-wide">แดชบอร์ดภาพรวม</h1>
+            <p class="text-[10px] md:text-xs text-slate-400 font-light">สพม.บุรีรัมย์ • ระบบบริหารข้อมูลสารสนเทศ</p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="navigateLanding()" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-xs flex items-center gap-1.5 transition border border-white/10">
+            <i data-lucide="globe" class="w-3.5 h-3.5 text-sky-400"></i> <span class="hidden sm:inline">หน้าแรก</span>
+          </button>
+          <button onclick="openLogoutModal()" class="md:hidden p-2 text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </header>
+
+      <main class="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto space-y-6">
+        <!-- ================= TAB: DASHBOARD ================= -->
+        <section id="sec-dashboard" class="space-y-6 animate-fade-in">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
+            <div class="fintech-card fintech-card-hover p-4 rounded-2xl">
+              <div class="flex items-center justify-between text-sky-400 mb-2">
+                <span class="text-xs font-medium text-slate-400">ครูพละทั้งหมด</span>
+                <i data-lucide="users" class="w-5 h-5 bg-sky-500/10 p-1 rounded-lg"></i>
+              </div>
+              <p id="statTotalTeachers" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <span class="text-[10px] text-slate-400">สพม.บุรีรัมย์</span>
+            </div>
+
+            <div class="fintech-card fintech-card-hover p-4 rounded-2xl">
+              <div class="flex items-center justify-between text-rose-400 mb-2">
+                <span class="text-xs font-medium text-slate-400">สหวิทยาเขต</span>
+                <i data-lucide="map-pin" class="w-5 h-5 bg-rose-500/10 p-1 rounded-lg"></i>
+              </div>
+              <p id="statDistricts" class="text-xl md:text-2xl font-bold text-white font-mono">9</p>
+              <span class="text-[10px] text-slate-400">พื้นที่บริการ</span>
+            </div>
+
+            <div class="fintech-card fintech-card-hover p-4 rounded-2xl">
+              <div class="flex items-center justify-between text-purple-400 mb-2">
+                <span class="text-xs font-medium text-slate-400">จองเสื้อแล้ว</span>
+                <i data-lucide="check-circle-2" class="w-5 h-5 bg-purple-500/10 p-1 rounded-lg"></i>
+              </div>
+              <p id="statOrderedCount" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <span class="text-[10px] text-slate-400">คน (สั่งจองแล้ว)</span>
+            </div>
+
+            <div class="fintech-card fintech-card-hover p-4 rounded-2xl">
+              <div class="flex items-center justify-between text-amber-400 mb-2">
+                <span class="text-xs font-medium text-slate-400">ยังไม่จองเสื้อ</span>
+                <i data-lucide="alert-circle" class="w-5 h-5 bg-amber-500/10 p-1 rounded-lg"></i>
+              </div>
+              <p id="statUnorderedCount" class="text-xl md:text-2xl font-bold text-white font-mono">0</p>
+              <span class="text-[10px] text-slate-400">คน (ยังไม่ได้บันทึก)</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <div class="fintech-panel p-5 rounded-3xl">
+              <h3 class="text-xs md:text-sm font-bold text-white mb-4 flex items-center gap-2 tracking-wide">
+                <i data-lucide="pie-chart" class="w-4 h-4 text-sky-400"></i> สัดส่วนครูพละตามสหวิทยาเขต
+              </h3>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="districtChart"></canvas>
+              </div>
+            </div>
+
+            <div class="fintech-panel p-5 rounded-3xl">
+              <h3 class="text-xs md:text-sm font-bold text-white mb-4 flex items-center gap-2 tracking-wide">
+                <i data-lucide="bar-chart-2" class="w-4 h-4 text-rose-400"></i> สถิติตามตำแหน่งวิทยฐานะ
+              </h3>
+              <div class="h-64 relative flex items-center justify-center">
+                <canvas id="positionChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: EMPLOYEES ================= -->
+        <section id="sec-employees" class="hidden space-y-4 animate-fade-in">
+          <div class="fintech-panel p-4 rounded-2xl border border-white/10 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5 text-xs">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">ค้นหาคำสำคัญ</label>
+                <div class="relative">
+                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+                  <input type="text" id="filterKeyword" oninput="renderEmployeeTable()" placeholder="ชื่อ, รหัส, เบอร์โทร..." class="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">เพศ</label>
+                <select id="filterGenderSelect" onchange="renderEmployeeTable()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900">
+                  <option value="">-- ทุกเพศ --</option>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">สหวิทยาเขต</label>
+                <select id="filterDistrictSelect" onchange="onFilterDistrictChange()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900">
+                  <option value="">-- ทุกสหวิทยาเขต --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">โรงเรียน</label>
+                <select id="filterSchoolSelect" onchange="renderEmployeeTable()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900">
+                  <option value="">-- ทุกโรงเรียน --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">ตำแหน่ง / วิทยฐานะ</label>
+                <select id="filterPositionSelect" onchange="renderEmployeeTable()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900">
+                  <option value="">-- ทุกตำแหน่ง --</option>
+                  <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                  <option value="ครู ค.ศ.1">ครู ค.ศ.1</option>
+                  <option value="ครูชำนาญการ">ครูชำนาญการ</option>
+                  <option value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</option>
+                  <option value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</option>
+                  <option value="พนักงานราชการ">พนักงานราชการ</option>
+                  <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Search Result Badge (ชาย / หญิง / รวม) -->
+            <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-3">
+                <span class="text-slate-400">ผลการค้นหาบุคลากร:</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30">ทั้งหมด: <span id="empCountTotal" class="font-mono">0</span> คน</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">ชาย: <span id="empCountMale" class="font-mono">0</span> คน</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-semibold border border-pink-500/30">หญิง: <span id="empCountFemale" class="font-mono">0</span> คน</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="downloadCSVTemplate()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs flex items-center gap-1.5 border border-white/10 transition">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> Template CSV
+                </button>
+                <button onclick="openBulkImportModal()" class="px-3 py-1.5 bg-white/5 hover:bg-white/10 text-slate-300 rounded-xl text-xs flex items-center gap-1.5 border border-white/10 transition">
+                  <i data-lucide="upload" class="w-3.5 h-3.5 text-sky-400"></i> นำเข้าไฟล์ CSV
+                </button>
+                <button onclick="exportEmployeesExcel()" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-xl text-xs flex items-center gap-1.5 border border-emerald-500/30 transition">
+                  <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5 text-emerald-400"></i> ส่งออก Excel
+                </button>
+                <button onclick="exportEmployeesPDF()" class="px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl text-xs flex items-center gap-1.5 border border-rose-500/30 transition">
+                  <i data-lucide="printer" class="w-3.5 h-3.5 text-rose-400"></i> พิมพ์ / PDF
+                </button>
+                <button id="btnAddEmployee" onclick="openEmployeeModal()" class="gradient-btn px-4 py-1.5 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-lg border border-white/15">
+                  <i data-lucide="plus" class="w-4 h-4"></i> เพิ่มครูพละ
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table Container -->
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3 px-4">รูปภาพ</th>
+                    <th class="py-3 px-4">รหัส / ชื่อ-สกุล</th>
+                    <th class="py-3 px-4">เพศ</th>
+                    <th class="py-3 px-4">ตำแหน่ง</th>
+                    <th class="py-3 px-4">โรงเรียน / สหวิทยาเขต</th>
+                    <th class="py-3 px-4">อายุราชการคงเหลือ</th>
+                    <th class="py-3 px-4">วันเกษียณ (พ.ศ.)</th>
+                    <th class="py-3 px-4 text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="employeeTableBody" class="divide-y divide-white/5 text-slate-200">
+                </tbody>
+              </table>
+            </div>
+            <div id="employeeEmptyState" class="hidden p-8 text-center text-slate-400 text-xs font-light">
+              ไม่พบข้อมูลบุคลากรที่ค้นหา
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: SHIRTS ================= -->
+        <section id="sec-shirts" class="hidden space-y-6 animate-fade-in">
+          <!-- Action Banner -->
+          <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="shirt" class="w-4 h-4 text-rose-400"></i> ระบบสั่งจองเสื้อบุคลากรครูพละ สพม.บุรีรัมย์
+              </h3>
+              <p class="text-xs text-slate-300 mt-0.5 font-light">ราคาตัวละ <span id="displayShirtPrice" class="text-rose-400 font-bold font-mono">350</span> บาท</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="exportShirtOrdersExcel()" class="px-3 py-2 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 rounded-xl text-xs font-medium flex items-center gap-1.5 border border-emerald-500/30 transition">
+                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> รายงาน Excel
+              </button>
+              <button onclick="exportShirtOrdersPDF()" class="px-3 py-2 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 rounded-xl text-xs font-medium flex items-center gap-1.5 border border-rose-500/30 transition">
+                <i data-lucide="printer" class="w-4 h-4"></i> พิมพ์ / PDF
+              </button>
+              <button onclick="openShirtOrderModal()" class="gradient-btn px-4 py-2 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-lg border border-white/15">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> สั่งจองเสื้อใหม่
+              </button>
+            </div>
+          </div>
+
+          <!-- Financial & Balance Summary Cards -->
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+            <div class="fintech-card p-4 rounded-2xl">
+              <span class="text-[11px] text-slate-400 block">จำนวนสั่งจองทั้งหมด</span>
+              <h4 id="summaryShirtTotalQty" class="text-xl font-bold text-white font-mono mt-1">0 ตัว</h4>
+            </div>
+            <div class="fintech-card p-4 rounded-2xl">
+              <span class="text-[11px] text-slate-400 block">ยอดรวมทั้งสิ้น (บาท)</span>
+              <h4 id="summaryShirtTotalAmount" class="text-xl font-bold text-sky-400 font-mono mt-1">฿0.00</h4>
+            </div>
+            <div class="fintech-card p-4 rounded-2xl">
+              <span class="text-[11px] text-slate-400 block">ยอดชำระเงินแล้ว</span>
+              <h4 id="summaryShirtPaidAmount" class="text-xl font-bold text-emerald-400 font-mono mt-1">฿0.00</h4>
+            </div>
+            <div class="fintech-card p-4 rounded-2xl">
+              <span class="text-[11px] text-slate-400 block">ยอดค้างชำระ (ยอดขาด)</span>
+              <h4 id="summaryShirtUnpaidAmount" class="text-xl font-bold text-rose-400 font-mono mt-1">฿0.00</h4>
+            </div>
+          </div>
+
+          <!-- Size Breakdown Grid -->
+          <div class="fintech-panel p-5 rounded-3xl border border-white/10">
+            <h4 class="text-xs font-bold text-slate-200 mb-3 flex items-center gap-2 tracking-wide">
+              <i data-lucide="package" class="w-3.5 h-3.5 text-sky-400"></i> สรุปยอดสั่งจองแยกตามขนาดไซส์เสื้อ (Size Breakdown)
+            </h4>
+            <div id="shirtSizeSummaryGrid" class="grid grid-cols-3 sm:grid-cols-5 lg:grid-cols-9 gap-2.5 text-center">
+            </div>
+          </div>
+
+          <!-- Order Tracking Filter Tabs with Gender & District Stats -->
+          <div class="fintech-panel p-4 rounded-2xl border border-white/10 space-y-3">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">ค้นหาคำสำคัญ</label>
+                <div class="relative">
+                  <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+                  <input type="text" id="shirtSearchKeyword" oninput="renderShirtTable()" placeholder="ค้นหาชื่อ, โรงเรียน, สหวิทยาเขต..." class="glass-input w-full pl-8 pr-3 py-1.5 rounded-xl text-xs">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">เลือกสหวิทยาเขต</label>
+                <select id="shirtFilterDistrictSelect" onchange="renderShirtTable()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900 text-xs">
+                  <option value="">-- ทุกสหวิทยาเขต --</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-400 mb-1">เลือกเพศ</label>
+                <select id="shirtFilterGenderSelect" onchange="renderShirtTable()" class="glass-input w-full px-3 py-1.5 rounded-xl bg-slate-900 text-xs">
+                  <option value="">-- ทุกเพศ --</option>
+                  <option value="ชาย">ชาย</option>
+                  <option value="หญิง">หญิง</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Dynamic Search Result Badge for Shirts -->
+            <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-3">
+                <span class="text-slate-400">สถิติกลุ่มเป้าหมาย:</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-sky-500/20 text-sky-300 font-semibold border border-sky-500/30">ครูทั้งหมด: <span id="shirtFilterTotal" class="font-mono">0</span> คน</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-blue-500/20 text-blue-300 font-semibold border border-blue-500/30">ชาย: <span id="shirtFilterMale" class="font-mono">0</span> คน</span>
+                <span class="px-2.5 py-0.5 rounded-lg bg-pink-500/20 text-pink-300 font-semibold border border-pink-500/30">หญิง: <span id="shirtFilterFemale" class="font-mono">0</span> คน</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="setShirtFilterTab('all')" id="tabShirtAll" class="gradient-btn px-3 py-1.5 rounded-xl text-xs font-medium text-white shadow-md border border-white/15">
+                  ทั้งหมด (<span id="countShirtAll">0</span>)
+                </button>
+                <button onclick="setShirtFilterTab('ordered')" id="tabShirtOrdered" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 transition">
+                  สั่งจองแล้ว (<span id="countShirtOrdered">0</span>)
+                </button>
+                <button onclick="setShirtFilterTab('unordered')" id="tabShirtUnordered" class="px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 transition">
+                  ยังไม่สั่งจอง (<span id="countShirtUnordered">0</span>)
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shirt Orders Table -->
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3 px-4">ชื่อ - นามสกุล</th>
+                    <th class="py-3 px-4">เพศ</th>
+                    <th class="py-3 px-4">โรงเรียน / สหวิทยาเขต</th>
+                    <th class="py-3 px-4">สถานะการสั่งจอง</th>
+                    <th class="py-3 px-4">ทรง / ขนาดไซส์</th>
+                    <th class="py-3 px-4">จำนวน (ตัว)</th>
+                    <th class="py-3 px-4">ยอดรวม (บาท)</th>
+                    <th class="py-3 px-4">สถานะชำระเงิน</th>
+                    <th class="py-3 px-4 text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="shirtTableBody" class="divide-y divide-white/5 text-slate-200">
+                </tbody>
+              </table>
+            </div>
+            <div id="shirtEmptyState" class="hidden p-8 text-center text-slate-400 text-xs font-light">
+              ไม่พบข้อมูลการสั่งจอง
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: REPORTS ================= -->
+        <section id="sec-reports" class="hidden space-y-6 animate-fade-in">
+          <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="file-bar-chart" class="w-4 h-4 text-amber-400"></i> รายงานสถิติและการเกษียณอายุราชการ
+              </h3>
+              <p class="text-xs text-slate-400 font-light">ตรวจสอบรายชื่อบุคลากรที่จะครบเกษียณอายุราชการในแต่ละปีงบประมาณ (พ.ศ.)</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-300">เลือกปีงบประมาณ (พ.ศ.):</label>
+              <select id="reportYearSelect" onchange="renderRetirementReport()" class="glass-input px-3 py-1.5 rounded-xl text-xs bg-slate-900 font-mono">
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="fintech-card p-4 rounded-2xl">
+              <p class="text-xs text-slate-400">จำนวนที่จะเกษียณในปีนี้</p>
+              <h4 id="reportYearRetireCount" class="text-2xl font-bold text-amber-400 font-mono mt-1">0 คน</h4>
+            </div>
+            <div class="fintech-card p-4 rounded-2xl">
+              <p class="text-xs text-slate-400">คิดเป็นร้อยละของบุคลากร</p>
+              <h4 id="reportYearRetirePercent" class="text-2xl font-bold text-sky-400 font-mono mt-1">0%</h4>
+            </div>
+            <div class="fintech-card p-4 rounded-2xl">
+              <p class="text-xs text-slate-400">โรงเรียนที่มีผู้เกษียณ</p>
+              <h4 id="reportYearSchoolsCount" class="text-2xl font-bold text-rose-400 font-mono mt-1">0 โรงเรียน</h4>
+            </div>
+          </div>
+
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="px-5 py-3 border-b border-white/10 font-bold text-xs text-slate-200">
+              รายชื่อบุคลากรที่จะครบเกษียณอายุราชการ (ณ วันที่ 30 กันยายน)
+            </div>
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3 px-4">รหัส</th>
+                    <th class="py-3 px-4">ชื่อ - นามสกุล</th>
+                    <th class="py-3 px-4">ตำแหน่ง</th>
+                    <th class="py-3 px-4">โรงเรียน</th>
+                    <th class="py-3 px-4">สหวิทยาเขต</th>
+                    <th class="py-3 px-4">วันเกิด (พ.ศ.)</th>
+                    <th class="py-3 px-4">วันเกษียณอายุราชการ (พ.ศ.)</th>
+                  </tr>
+                </thead>
+                <tbody id="reportTableBody" class="divide-y divide-white/5 text-slate-200">
+                </tbody>
+              </table>
+            </div>
+            <div id="reportEmptyState" class="hidden p-8 text-center text-slate-400 text-xs font-light">
+              ไม่มีบุคลากรที่ครบกำหนดเกษียณอายุราชการในปีนี้
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: PROFILE ================= -->
+        <section id="sec-profile" class="hidden max-w-2xl mx-auto space-y-4 animate-fade-in">
+          <div class="fintech-panel rounded-3xl border border-white/10 p-6 sm:p-8">
+            <div class="flex flex-col sm:flex-row items-center gap-5 pb-6 border-b border-white/10">
+              <div id="myProfileAvatar" class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-2xl overflow-hidden border border-white/20 shadow-xl cursor-pointer" onclick="viewDetailModal(currentUser ? currentUser.full_name : '', '', '', '', '', '', '', document.getElementById('myProfileAvatar').querySelector('img')?.src)">
+              </div>
+              <div class="text-center sm:text-left flex-1">
+                <h3 id="myProfileName" class="text-lg font-bold text-white">ชื่อผู้ใช้งาน</h3>
+                <p id="myProfileRole" class="text-xs text-rose-400 font-mono mt-0.5">ROLE</p>
+                <p id="myProfileSchool" class="text-xs text-slate-300 mt-1 font-light">โรงเรียน -</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-6 text-xs">
+              <div class="fintech-card p-3.5 rounded-xl">
+                <span class="text-slate-400 block mb-1">รหัสประจำตัว</span>
+                <span id="myProfileCode" class="font-semibold text-white font-mono">-</span>
+              </div>
+              <div class="fintech-card p-3.5 rounded-xl">
+                <span class="text-slate-400 block mb-1">ตำแหน่งวิทยฐานะ</span>
+                <span id="myProfilePos" class="font-semibold text-white">-</span>
+              </div>
+              <div class="fintech-card p-3.5 rounded-xl">
+                <span class="text-slate-400 block mb-1">สหวิทยาเขต</span>
+                <span id="myProfileDistrict" class="font-semibold text-white">-</span>
+              </div>
+              <div class="fintech-card p-3.5 rounded-xl">
+                <span class="text-slate-400 block mb-1">เบอร์โทรศัพท์</span>
+                <span id="myProfilePhone" class="font-semibold text-white font-mono">-</span>
+              </div>
+              <div class="fintech-card p-3.5 rounded-xl sm:col-span-2">
+                <span class="text-slate-400 block mb-1">อายุราชการคงเหลือ</span>
+                <span id="myProfileRemainingTime" class="font-bold text-amber-400 text-sm">-</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: USERS ================= -->
+        <section id="sec-users" class="hidden space-y-4 animate-fade-in">
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between fintech-panel p-4 rounded-2xl border border-white/10">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-purple-400"></i> รายชื่อผู้ใช้งานในระบบทั้งหมด
+            </h3>
+            <button onclick="openUserModal()" class="gradient-btn px-3.5 py-2 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-md border border-white/15">
+              <i data-lucide="user-plus" class="w-4 h-4"></i> เพิ่มผู้ใช้งาน
+            </button>
+          </div>
+
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3.5 px-4">รูปภาพ</th>
+                    <th class="py-3.5 px-4">ชื่อ-สกุล</th>
+                    <th class="py-3.5 px-4">ชื่อผู้ใช้ (Username)</th>
+                    <th class="py-3.5 px-4">สิทธิ์การใช้งาน (Role)</th>
+                    <th class="py-3.5 px-4 text-center">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody id="userTableBody" class="divide-y divide-white/5 text-slate-200">
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= TAB: ACTIVITY LOGS ================= -->
+        <section id="sec-logs" class="hidden space-y-4 animate-fade-in">
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center justify-between fintech-panel p-4 rounded-2xl border border-white/10">
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="history" class="w-4 h-4 text-amber-400"></i> บันทึกประวัติการเข้าใช้งานระบบ (Activity Logs)
+              </h3>
+              <p class="text-xs text-slate-400 font-light">ติดตามการเข้าสู่ระบบและกิจกรรมของผู้ใช้ทุกคน</p>
+            </div>
+            <button onclick="clearActivityLogs()" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-xl text-xs flex items-center gap-1.5 transition">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> ล้างประวัติทั้งหมด
+            </button>
+          </div>
+
+          <div class="fintech-panel rounded-2xl border border-white/10 overflow-hidden shadow-2xl">
+            <div class="overflow-x-auto custom-scroll">
+              <table class="w-full text-left text-xs">
+                <thead class="bg-white/5 border-b border-white/10 text-slate-300 font-medium">
+                  <tr>
+                    <th class="py-3.5 px-4">วันและเวลา</th>
+                    <th class="py-3.5 px-4">ผู้ใช้งาน</th>
+                    <th class="py-3.5 px-4">สิทธิ์ (Role)</th>
+                    <th class="py-3.5 px-4">กิจกรรม (Action)</th>
+                    <th class="py-3.5 px-4">เบราว์เซอร์ / อุปกรณ์</th>
+                  </tr>
+                </thead>
+                <tbody id="activityLogTableBody" class="divide-y divide-white/5 text-slate-200 font-mono">
+                </tbody>
+              </table>
+            </div>
+            <div id="logEmptyState" class="hidden p-8 text-center text-slate-400 text-xs font-light">
+              ยังไม่มีบันทึกประวัติกิจกรรมในระบบ
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <!-- Authenticated Footer -->
+      <footer class="mt-auto py-6 border-t border-white/10 fintech-panel text-center text-xs text-slate-400 space-y-1">
+        <p id="footerMainTextAuth">© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์</p>
+        <p id="footerDevTextAuth" class="text-[11px] text-slate-500">พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์</p>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ================= 4. ALL MODALS ================= -->
+
+  <!-- MODAL: IMAGE CROPPER -->
+  <div id="modalCropper" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-lg w-full p-6 border border-white/20 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="crop" class="w-4 h-4 text-sky-400"></i> ครอปตัดรูปภาพประจำตัว (1:1 Square)
+        </h3>
+        <button onclick="closeCropperModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <div class="max-h-80 w-full overflow-hidden rounded-2xl bg-black flex items-center justify-center">
+        <img id="cropperImageTarget" class="max-h-72 w-full object-contain">
+      </div>
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+        <button type="button" onclick="closeCropperModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl text-xs">ยกเลิก</button>
+        <button type="button" onclick="applyImageCrop()" class="gradient-btn px-5 py-2 text-white rounded-xl text-xs font-semibold shadow-lg">ใช้รูปภาพนี้</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: VIEW DETAIL & AVATAR POPUP -->
+  <div id="modalDetail" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-sm w-full p-6 border border-white/20 shadow-2xl text-center space-y-4 animate-fade-in text-xs">
+      <div class="w-28 h-28 mx-auto rounded-3xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 overflow-hidden border-2 border-white/20 shadow-2xl flex items-center justify-center">
+        <img id="detailAvatarImg" class="w-full h-full object-cover">
+        <span id="detailAvatarPlaceholder" class="text-2xl font-bold text-white">PE</span>
+      </div>
+      <div>
+        <h3 id="detailFullName" class="text-base font-bold text-white mt-1">-</h3>
+        <p id="detailPosition" class="text-rose-400 font-medium">-</p>
+        <p id="detailSchool" class="text-slate-300 mt-0.5">-</p>
+      </div>
+      <div class="p-3.5 bg-white/5 rounded-2xl text-left border border-white/10 space-y-1.5 font-light text-slate-300 text-[11px]">
+        <p><strong>รหัสประจำตัว:</strong> <span id="detailCode" class="font-mono text-white">-</span></p>
+        <p><strong>สหวิทยาเขต:</strong> <span id="detailDistrict" class="text-white">-</span></p>
+        <p><strong>เบอร์โทรศัพท์:</strong> <span id="detailPhone" class="font-mono text-white">-</span></p>
+        <p><strong>วันเกษียณ:</strong> <span id="detailRetire" class="font-mono text-amber-300">-</span></p>
+      </div>
+      <button type="button" onclick="closeDetailModal()" class="w-full py-2 fintech-card hover:bg-white/10 text-slate-200 rounded-xl font-medium">ปิดหน้าต่าง</button>
+    </div>
+  </div>
+
+  <!-- MODAL: EMPLOYEE FORM -->
+  <div id="modalEmployee" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-white/20 shadow-2xl">
+      <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+        <h3 id="modalEmployeeTitle" class="text-sm font-bold text-white">เพิ่มข้อมูลครูพละ</h3>
+        <button onclick="closeEmployeeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="employeeForm" onsubmit="handleSaveEmployee(event)" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1 text-xs">
+        <input type="hidden" id="empFormId">
+        <div class="flex items-center gap-4 fintech-card p-3 rounded-2xl border border-white/10">
+          <div id="empAvatarPreview" class="w-14 h-14 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+            <i data-lucide="image" class="w-6 h-6 text-slate-400"></i>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-300 mb-1">รูปถ่ายประจำตัว (ครอปรูป 1:1 ได้ทันที)</label>
+            <input type="file" id="empAvatarFile" accept="image/*" onchange="startImageCrop(event)" class="block w-full text-[11px] text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-rose-500/20 file:text-rose-300">
+            <input type="hidden" id="empAvatarUrl">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">รหัสประจำตัว (Auto)</label>
+            <input type="text" id="empFormCode" readonly class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900/60 font-mono text-rose-300">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">คำนำหน้า *</label>
+            <select id="empFormPrefix" onchange="autoSyncGenderFromPrefix()" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="นาย">นาย</option>
+              <option value="นาง">นาง</option>
+              <option value="นางสาว">นางสาว</option>
+              <option value="ว่าที่ร้อยตรี">ว่าที่ร้อยตรี</option>
+              <option value="ดร.">ดร.</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">เพศ *</label>
+            <select id="empFormGender" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="ชาย">ชาย</option>
+              <option value="หญิง">หญิง</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">ชื่อ - นามสกุล (ไม่ต้องระบุคำนำหน้า) *</label>
+          <input type="text" id="empFormName" placeholder="สมชาย มุ่งมั่น" required class="glass-input w-full px-3 py-2 rounded-xl">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">ตำแหน่ง / วิทยฐานะ *</label>
+            <select id="empFormPosition" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+              <option value="ครู ค.ศ.1">ครู ค.ศ.1</option>
+              <option value="ครูชำนาญการ">ครูชำนาญการ</option>
+              <option value="ครูชำนาญการพิเศษ">ครูชำนาญการพิเศษ</option>
+              <option value="ครูเชี่ยวชาญ">ครูเชี่ยวชาญ</option>
+              <option value="พนักงานราชการ">พนักงานราชการ</option>
+              <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">เบอร์โทรศัพท์</label>
+            <input type="tel" id="empFormPhone" placeholder="08xxxxxxxx" class="glass-input w-full px-3 py-2 rounded-xl font-mono">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">สหวิทยาเขต *</label>
+            <select id="empFormDistrict" onchange="onFormDistrictChange()" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="">-- เลือกสหวิทยาเขต --</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">โรงเรียนสังกัด *</label>
+            <select id="empFormSchool" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="">-- เลือกโรงเรียน --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <label class="block text-slate-300 font-medium">วัน/เดือน/ปีเกิด (พุทธศักราช) *</label>
+          <div class="grid grid-cols-3 gap-2">
+            <select id="birthDaySelect" onchange="updateBirthDateFromThaiPicker()" class="glass-input px-2 py-2 rounded-xl bg-slate-900 font-mono"></select>
+            <select id="birthMonthSelect" onchange="updateBirthDateFromThaiPicker()" class="glass-input px-2 py-2 rounded-xl bg-slate-900 font-mono">
+              <option value="">เดือน</option>
+              <option value="1">มกราคม</option><option value="2">กุมภาพันธ์</option><option value="3">มีนาคม</option>
+              <option value="4">เมษายน</option><option value="5">พฤษภาคม</option><option value="6">มิถุนายน</option>
+              <option value="7">กรกฎาคม</option><option value="8">สิงหาคม</option><option value="9">กันยายน</option>
+              <option value="10">ตุลาคม</option><option value="11">พฤศจิกายน</option><option value="12">ธันวาคม</option>
+            </select>
+            <select id="birthYearSelect" onchange="updateBirthDateFromThaiPicker()" class="glass-input px-2 py-2 rounded-xl bg-slate-900 font-mono"></select>
+          </div>
+          <input type="hidden" id="empFormBirth">
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">วันเกษียณอายุราชการ (คำนวณอัตโนมัติ)</label>
+          <input type="text" id="empFormRetireDisplay" readonly placeholder="30 กันยายน พ.ศ. -" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900/60 text-rose-300 font-mono">
+          <input type="hidden" id="empFormRetire">
+        </div>
+
+        <div id="remainingAgeBanner" class="hidden p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center gap-2">
+          <i data-lucide="clock" class="w-4 h-4 shrink-0"></i>
+          <div><span class="font-medium text-[11px] block">อายุราชการคงเหลือ:</span><span id="remainingAgeText" class="font-bold text-xs">0 ปี 0 เดือน 0 วัน</span></div>
+        </div>
+
+        <div class="pt-4 border-t border-white/10 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeEmployeeModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
+          <button type="submit" class="gradient-btn px-5 py-2 text-white rounded-xl font-semibold shadow-lg border border-white/15">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: SHIRT ORDER FORM -->
+  <div id="modalShirtOrder" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-white/20 shadow-2xl text-xs">
+      <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+        <h3 id="modalShirtOrderTitle" class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="shirt" class="w-4 h-4 text-rose-400"></i> สั่งจองเสื้อบุคลากรครูพละ
+        </h3>
+        <button onclick="closeShirtOrderModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="shirtOrderForm" onsubmit="handleSaveShirtOrder(event)" class="p-6 space-y-4 overflow-y-auto custom-scroll flex-1">
+        <input type="hidden" id="shirtOrderId">
+        <div>
+          <label class="block text-slate-300 mb-1">เลือกบุคลากรครูพละ *</label>
+          <select id="shirtOrderEmpSelect" onchange="calculateShirtTotalPrice()" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900"></select>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">ชนิดทรงเสื้อ *</label>
+            <select id="shirtOrderType" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="ทรงตรง (Unisex)">ทรงตรง (Unisex)</option>
+              <option value="ทรงเข้ารูป (หญิง)">ทรงเข้ารูป (หญิง)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">ขนาดไซส์เสื้อ *</label>
+            <select id="shirtOrderSize" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900 font-mono">
+              <option value="SS">SS (รอบอก 34 นิ้ว)</option>
+              <option value="S">S (รอบอก 36 นิ้ว)</option>
+              <option value="M">M (รอบอก 38 นิ้ว)</option>
+              <option value="L" selected>L (รอบอก 40 นิ้ว)</option>
+              <option value="XL">XL (รอบอก 42 นิ้ว)</option>
+              <option value="2XL">2XL (รอบอก 44 นิ้ว)</option>
+              <option value="3XL">3XL (รอบอก 46 นิ้ว)</option>
+              <option value="4XL">4XL (รอบอก 48 นิ้ว)</option>
+              <option value="5XL">5XL (รอบอก 50 นิ้ว)</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">จำนวน (ตัว) *</label>
+            <input type="number" id="shirtOrderQty" value="1" min="1" max="50" oninput="calculateShirtTotalPrice()" required class="glass-input w-full px-3 py-2 rounded-xl font-mono text-center">
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">ยอดรวมทั้งหมด (บาท)</label>
+            <input type="text" id="shirtOrderTotalPrice" readonly value="350" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900/60 font-mono text-rose-300 font-bold text-center">
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 mb-1">สถานะการชำระเงิน *</label>
+            <select id="shirtOrderPaymentStatus" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="รอชำระเงิน">รอชำระเงิน</option>
+              <option value="ชำระเงินแล้ว">ชำระเงินแล้ว</option>
+              <option value="ยกเลิก">ยกเลิก</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-slate-300 mb-1">หลักฐานสลิปโอนเงิน</label>
+            <input type="file" id="shirtSlipFileInput" accept="image/*" onchange="previewShirtSlipImage(event)" class="block w-full text-[11px] text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:bg-sky-500/20 file:text-sky-300">
+            <input type="hidden" id="shirtSlipUrl">
+          </div>
+        </div>
+        <div id="slipPreviewBox" class="hidden p-2 rounded-xl bg-white/5 border border-white/10 text-center">
+          <p class="text-[10px] text-slate-400 mb-1 font-light">ตัวอย่างสลิปโอนเงิน:</p>
+          <img id="slipPreviewImg" class="max-h-32 mx-auto rounded-lg object-contain shadow">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">หมายเหตุเพิ่มเติม</label>
+          <input type="text" id="shirtOrderNote" placeholder="เช่น ปักชื่อเฉพาะ, ส่งผ่านหัวหน้าเขต" class="glass-input w-full px-3 py-2 rounded-xl">
+        </div>
+        <div class="pt-4 border-t border-white/10 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeShirtOrderModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
+          <button type="submit" class="gradient-btn px-5 py-2 text-white rounded-xl font-semibold shadow-lg border border-white/15">บันทึกการสั่งจอง</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: BULK IMPORT -->
+  <div id="modalBulkImport" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-md w-full p-6 border border-white/20 shadow-2xl text-xs space-y-4">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="upload" class="w-4 h-4 text-sky-400"></i> นำเข้าข้อมูลบุคลากรหลายรายการ
+        </h3>
+        <button onclick="closeBulkImportModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-slate-300 font-light">เลือกไฟล์ .CSV เพื่อนำเข้าข้อมูลบุคลากรเข้าสู่ระบบ</p>
+      <div class="border-2 border-dashed border-white/20 rounded-2xl p-6 text-center hover:border-sky-400 transition cursor-pointer" onclick="document.getElementById('bulkCsvFileInput').click()">
+        <i data-lucide="file-spreadsheet" class="w-8 h-8 text-sky-400 mx-auto mb-2"></i>
+        <span class="text-slate-300 font-medium block">คลิกเพื่อเลือกไฟล์ CSV</span>
+        <span id="bulkFileNameDisplay" class="text-[10px] text-slate-500 mt-1 block font-mono">UTF-8 Encoded .csv</span>
+        <input type="file" id="bulkCsvFileInput" accept=".csv" class="hidden" onchange="handleBulkFileSelect(event)">
+      </div>
+      <div id="bulkImportPreview" class="hidden p-3 bg-white/5 rounded-xl border border-white/10 text-[11px] text-slate-300 max-h-36 overflow-y-auto custom-scroll"></div>
+      <div class="pt-2 flex items-center justify-end gap-2 border-t border-white/10">
+        <button type="button" onclick="closeBulkImportModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
+        <button type="button" id="btnExecuteBulkImport" onclick="executeBulkImport()" disabled class="gradient-btn px-5 py-2 disabled:opacity-50 text-white rounded-xl font-semibold border border-white/15">นำเข้าข้อมูล</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: SETTINGS (FOOTER & APP CONFIG) -->
+  <div id="modalSettings" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-md w-full overflow-hidden border border-white/20 shadow-2xl">
+      <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2">
+          <i data-lucide="settings" class="w-4 h-4 text-sky-400"></i> ตั้งค่าข้อมูลระบบ & Footer
+        </h3>
+        <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="settingsForm" onsubmit="handleSaveSettings(event)" class="p-6 space-y-3.5 text-xs">
+        <div class="flex items-center gap-4 fintech-card p-3 rounded-2xl border border-white/10">
+          <div id="settingsLogoPreview" class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+            <i data-lucide="image" class="w-5 h-5 text-slate-400"></i>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-300 mb-0.5">ตราสัญลักษณ์ / โลโก้เว็บ</label>
+            <input type="file" id="settingsLogoFile" accept="image/*" onchange="previewSettingsLogo(event)" class="block w-full text-[11px] text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-sky-500/20 file:text-sky-300">
+            <input type="hidden" id="settingsLogoUrl">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-0.5">ชื่อระบบ / โปรแกรม</label>
+          <input type="text" id="settingAppNameInput" required placeholder="เช่น ครูพละ สพม.บุรีรัมย์" class="glass-input w-full px-3 py-1.5 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-0.5">ชื่อหน่วยงาน / สังกัด</label>
+          <input type="text" id="settingAppSubNameInput" required placeholder="เช่น สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์" class="glass-input w-full px-3 py-1.5 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-0.5">ราคาเสื้อบุคลากรต่อตัว (บาท)</label>
+          <input type="number" id="settingShirtPriceInput" required placeholder="350" class="glass-input w-full px-3 py-1.5 rounded-xl font-mono">
+        </div>
+        <div class="pt-2 border-t border-white/10">
+          <label class="block text-slate-300 mb-0.5 font-semibold text-rose-400">ข้อความลิขสิทธิ์ Footer</label>
+          <input type="text" id="settingFooterTextInput" required placeholder="© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์" class="glass-input w-full px-3 py-1.5 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-0.5 font-semibold text-sky-400">ข้อมูลผู้พัฒนาระบบ</label>
+          <input type="text" id="settingDevInfoInput" required placeholder="พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์" class="glass-input w-full px-3 py-1.5 rounded-xl">
+        </div>
+        <div class="pt-4 border-t border-white/10 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeSettingsModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
+          <button type="submit" class="gradient-btn px-5 py-2 text-white rounded-xl font-semibold shadow-lg border border-white/15">บันทึกการตั้งค่า</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- USER FORM MODAL -->
+  <div id="modalUser" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-md w-full overflow-hidden border border-white/20 shadow-2xl">
+      <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+        <h3 id="modalUserTitle" class="text-sm font-bold text-white">เพิ่มผู้ใช้งานระบบ</h3>
+        <button onclick="closeUserModal()" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <form id="userForm" onsubmit="handleSaveUser(event)" class="p-6 space-y-3.5 text-xs">
+        <input type="hidden" id="userFormId">
+
+        <div class="flex items-center gap-4 fintech-card p-3 rounded-2xl border border-white/10">
+          <div id="userAvatarPreview" class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-inner">
+            <i data-lucide="user" class="w-5 h-5 text-slate-400"></i>
+          </div>
+          <div class="flex-1">
+            <label class="block text-xs font-medium text-slate-300 mb-0.5">รูปโปรไฟล์ผู้ใช้งาน</label>
+            <input type="file" id="userAvatarFile" accept="image/*" onchange="previewUserAvatar(event)" class="block w-full text-[11px] text-slate-300 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:bg-sky-500/20 file:text-sky-300">
+            <input type="hidden" id="userAvatarUrl">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-300 mb-1">ชื่อ - สกุล ผู้ใช้งาน *</label>
+          <input type="text" id="userFormFullName" required placeholder="ชื่อ-สกุล" class="glass-input w-full px-3 py-2 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">ชื่อผู้ใช้งาน (Username) *</label>
+          <input type="text" id="userFormUsername" required placeholder="เช่น kru_somkiat" class="glass-input w-full px-3 py-2 rounded-xl">
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">รหัสผ่าน (Password) *</label>
+          <div class="relative">
+            <input type="password" id="userFormPassword" placeholder="รหัสผ่าน" class="glass-input w-full pl-3 pr-10 py-2 rounded-xl">
+            <button type="button" onclick="togglePasswordVisibility('userFormPassword', 'userEyeIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
+              <i id="userEyeIcon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 mb-1">สิทธิ์การใช้งาน (Role) *</label>
+          <select id="userFormRole" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <option value="employee">Employee (ดูข้อมูลตนเอง)</option>
+            <option value="hr">HR (จัดการข้อมูลครูพละ)</option>
+            <option value="admin">Admin (จัดการระบบทั้งหมด)</option>
+          </select>
+        </div>
+        <div class="pt-4 border-t border-white/10 flex items-center justify-end gap-2">
+          <button type="button" onclick="closeUserModal()" class="px-4 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl">ยกเลิก</button>
+          <button type="submit" class="gradient-btn px-5 py-2 text-white rounded-xl font-semibold shadow-lg border border-white/15">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- LOGOUT MODAL -->
+  <div id="modalLogout" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
+    <div class="fintech-panel rounded-3xl max-w-xs w-full p-6 text-center border border-white/20 shadow-2xl">
+      <div class="w-12 h-12 bg-rose-500/20 text-rose-400 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-500/30">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-sm font-bold text-white">ต้องการออกจากระบบ?</h3>
+      <p class="text-xs text-slate-300 mt-1 mb-5 font-light">คุณจะต้องเข้าสู่ระบบใหม่อีกครั้งเพื่อจัดการข้อมูล</p>
+      <div class="flex items-center gap-2">
+        <button onclick="closeLogoutModal()" class="flex-1 py-2 fintech-card hover:bg-white/10 text-slate-300 rounded-xl text-xs font-medium">ยกเลิก</button>
+        <button onclick="confirmLogout()" class="flex-1 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-semibold shadow-lg shadow-rose-600/30">ออกจากระบบ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================== -->
+  <!-- JAVASCRIPT APPLICATION LOGIC                               -->
+  <!-- ========================================================== -->
+  <script>
+    // 1. SUPABASE CONFIGURATION
+    const SUPABASE_URL = 'https://btoqlgrcezwxgxakzjbc.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_mPzt3SKuxiSB81TdJhFrAg_HgPDl5jA';
+    const dbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 2. MASTER DATA: 9 สหวิทยาเขต
+    const DISTRICT_SCHOOLS_MAP = {
+      "สหวิทยาเขตกระสัง": [
+        "กระสังพิทยาคม", "ชุมแสงพิทยาคม", "พลับพลาชัยพิทยาคม", "ลำดวนพิทยาคม", "สูงเนินพิทยาคม", "ห้วยราชพิทยาคม"
+      ],
+      "สหวิทยาเขตนางรอง": [
+        "นางรอง", "นางรองพิทยาคม", "สิงหวิทยาคม", "ทุ่งแสงทองพิทยาคม", "ถนนหักพิทยาคม", "พิมพ์รัฐประชาสรรค์", "พนมรุ้ง", "เหลืองพนาวิทยาคม", "ราชประชานุเคราะห์ 51"
+      ],
+      "สหวิทยาเขตประโคนชัย": [
+        "ประโคนชัยพิทยาคม", "เมืองตลุงพิทยาสรรพ์", "แสลงโทนพิทยาคม", "ไพศาลพิทยาคม", "บ้านบุวิทยาสรรค์", "โนนเจริญพิทยาคม", "บ้านกรวดวิทยาคาร"
+      ],
+      "สหวิทยาเขตพุทไธสง": [
+        "พุทไธสง", "คูเมืองวิทยาคม", "กู่สวนแตงพิทยาคม", "นาโพธิ์พิทยาคม", "ตูมใหญ่วิทยา", "มัธยมพรสำราญ", "อุดมอักษรพิทยาคม"
+      ],
+      "สหวิทยาเขตละหานทราย": [
+        "ละหานทรายรัชดาภิเษก", "ละหานทรายวิทยา", "ร่วมจิตต์วิทยา", "ตาจงพิทยาสรรค์", "ร่มเกล้าบุรีรัมย์", "ไทยเจริญวิทยา", "ปะคำพิทยาคม"
+      ],
+      "สหวิทยาเขตลำปลายมาศ": [
+        "ลำปลายมาศ", "ทะเมนชัยพิทยาคม", "ธารทองพิทยาคม", "ตลาดโพธิ์พิทยาคม", "เมืองแฝกพิทยาคม", "จตุราษฎร์พิทยาคม", "ชำนิพิทยาคม"
+      ],
+      "สหวิทยาเขตสตึก": [
+        "สตึก", "วิทยาศาสตร์จุฬาภรณราชวิทยาลัยฯบุรีรัมย์", "สะแกพิทยาคม", "แคนดงพิทยาคม", "เมืองแกพิทยาคม", "ร่อนทองพิทยาคม", "ดงพลองพิทยาคม", "สมเสม็ดวิทยา"
+      ],
+      "สหวิทยาเขตเมืองบุรีรัมย์": [
+        "บุรีรัมย์พิทยาคม", "ภัทรบพิตร", "บัวหลวงวิทยาคม", "กนกศิลป์พิทยาคม", "สองห้องพิทยาคม", "พระครูพิทยาคม", "รมย์บุรีพิทยาคม", "หนองตาดพิทยาคม", "สวายจีกพิทยาคม", "กลันทาพิทยาคม"
+      ],
+      "สหวิทยาเขตหนองกี่": [
+        "หนองกี่พิทยาคม", "หนองหงส์พิทยาคม", "ห้วยหินพิทยาคม", "เมืองโพธิ์ชัยพิทยาคม", "โนนสุวรรณพิทยาคม", "สามัคคีพิทยาคม"
+      ]
+    };
+
+    // 3. GLOBAL VARIABLES
+    let currentUser = null;
+    let employeeList = [];
+    let shirtOrderList = [];
+    let userList = [];
+    let activityLogs = [];
+    let compressedImageBlob = null;
+    let compressedUserAvatarBlob = null;
+    let compressedSlipBlob = null;
+    let bulkParsedRows = [];
+    let currentShirtTab = 'all';
+    let cropperInstance = null;
+
+    let appSettings = {
+      app_name: 'ครูพละ สพม.บุรีรัมย์',
+      app_sub_name: 'สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์',
+      logo_url: '',
+      shirt_price: 350.00,
+      footer_text: '© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์',
+      developer_info: 'พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์'
+    };
+
+    let chartDistrict = null;
+    let chartPosition = null;
+    let landingChartDistrict = null;
+    let landingChartPosition = null;
+
+    // 4. DROPDOWN & DATEPICKER FUNCTIONS (DECLARED BEFORE CALLS)
+    function initDropdownOptions() {
+      const filterDistrict = document.getElementById('filterDistrictSelect');
+      const formDistrict = document.getElementById('empFormDistrict');
+      const shirtFilterDistrict = document.getElementById('shirtFilterDistrictSelect');
+      
+      if (filterDistrict) filterDistrict.innerHTML = '<option value="">-- ทุกสหวิทยาเขต --</option>';
+      if (formDistrict) formDistrict.innerHTML = '<option value="">-- เลือกสหวิทยาเขต --</option>';
+      if (shirtFilterDistrict) shirtFilterDistrict.innerHTML = '<option value="">-- ทุกสหวิทยาเขต --</option>';
+
+      Object.keys(DISTRICT_SCHOOLS_MAP).forEach(d => {
+        if (filterDistrict) filterDistrict.innerHTML += `<option value="${d}">${d}</option>`;
+        if (formDistrict) formDistrict.innerHTML += `<option value="${d}">${d}</option>`;
+        if (shirtFilterDistrict) shirtFilterDistrict.innerHTML += `<option value="${d}">${d}</option>`;
+      });
+
+      const reportSelect = document.getElementById('reportYearSelect');
+      const currentYear = new Date().getFullYear();
+      if (reportSelect) {
+        reportSelect.innerHTML = '';
+        for (let y = currentYear - 1; y <= currentYear + 30; y++) {
+          reportSelect.innerHTML += `<option value="${y}" ${y === currentYear ? 'selected' : ''}>พ.ศ. ${y + 543}</option>`;
+        }
+      }
+    }
+
+    function initThaiDatePicker() {
+      const daySel = document.getElementById('birthDaySelect');
+      const yearSel = document.getElementById('birthYearSelect');
+      if (daySel) {
+        daySel.innerHTML = '<option value="">วัน</option>';
+        for (let d = 1; d <= 31; d++) daySel.innerHTML += `<option value="${d}">${d}</option>`;
+      }
+
+      const curThYear = new Date().getFullYear() + 543;
+      if (yearSel) {
+        yearSel.innerHTML = '<option value="">ปี พ.ศ.</option>';
+        for (let y = curThYear - 20; y >= curThYear - 65; y--) yearSel.innerHTML += `<option value="${y}">${y}</option>`;
+      }
+    }
+
+    function updateBirthDateFromThaiPicker() {
+      const d = document.getElementById('birthDaySelect')?.value;
+      const m = document.getElementById('birthMonthSelect')?.value;
+      const yTh = document.getElementById('birthYearSelect')?.value;
+
+      if (d && m && yTh) {
+        const yCe = parseInt(yTh) - 543;
+        const mm = String(m).padStart(2, '0');
+        const dd = String(d).padStart(2, '0');
+        const empBirth = document.getElementById('empFormBirth');
+        if (empBirth) empBirth.value = `${yCe}-${mm}-${dd}`;
+        calculateRetirementInfo();
+      } else {
+        const empBirth = document.getElementById('empFormBirth');
+        const empRetire = document.getElementById('empFormRetire');
+        const empRetireDisp = document.getElementById('empFormRetireDisplay');
+        const banner = document.getElementById('remainingAgeBanner');
+        if (empBirth) empBirth.value = '';
+        if (empRetire) empRetire.value = '';
+        if (empRetireDisp) empRetireDisp.value = '';
+        if (banner) banner.classList.add('hidden');
+      }
+    }
+
+    function setThaiDatePickerFromISO(isoStr) {
+      if (!isoStr) return;
+      const [y, m, d] = isoStr.split('-');
+      const daySel = document.getElementById('birthDaySelect');
+      const monthSel = document.getElementById('birthMonthSelect');
+      const yearSel = document.getElementById('birthYearSelect');
+      const empBirth = document.getElementById('empFormBirth');
+
+      if (daySel) daySel.value = parseInt(d);
+      if (monthSel) monthSel.value = parseInt(m);
+      if (yearSel) yearSel.value = parseInt(y) + 543;
+      if (empBirth) empBirth.value = isoStr;
+      calculateRetirementInfo();
+    }
+
+    function autoSyncGenderFromPrefix() {
+      const p = document.getElementById('empFormPrefix')?.value;
+      const genderSelect = document.getElementById('empFormGender');
+      if (genderSelect) {
+        if (p === 'นาย') genderSelect.value = 'ชาย';
+        else if (p === 'นาง' || p === 'นางสาว') genderSelect.value = 'หญิง';
+      }
+    }
+
+    function onFormDistrictChange() {
+      const dist = document.getElementById('empFormDistrict')?.value;
+      const schoolSelect = document.getElementById('empFormSchool');
+      if (schoolSelect) {
+        schoolSelect.innerHTML = '<option value="">-- เลือกโรงเรียน --</option>';
+        if (dist && DISTRICT_SCHOOLS_MAP[dist]) {
+          DISTRICT_SCHOOLS_MAP[dist].forEach(s => schoolSelect.innerHTML += `<option value="${s}">โรงเรียน${s}</option>`);
+        }
+      }
+    }
+
+    function onFilterDistrictChange() {
+      const dist = document.getElementById('filterDistrictSelect')?.value;
+      const schoolSelect = document.getElementById('filterSchoolSelect');
+      if (schoolSelect) {
+        schoolSelect.innerHTML = '<option value="">-- ทุกโรงเรียน --</option>';
+        if (dist && DISTRICT_SCHOOLS_MAP[dist]) {
+          DISTRICT_SCHOOLS_MAP[dist].forEach(s => schoolSelect.innerHTML += `<option value="${s}">โรงเรียน${s}</option>`);
+        } else {
+          Object.values(DISTRICT_SCHOOLS_MAP).flat().forEach(s => schoolSelect.innerHTML += `<option value="${s}">โรงเรียน${s}</option>`);
+        }
+      }
+      renderEmployeeTable();
+    }
+
+    function generateAutoEmpCode() {
+      const curYear = new Date().getFullYear() + 543;
+      return `PE-${curYear}-${String(employeeList.length + 1).padStart(4, '0')}`;
+    }
+
+    function calculateRetirementInfo() {
+      const birthInput = document.getElementById('empFormBirth')?.value;
+      if (!birthInput) return;
+
+      const birthDate = new Date(birthInput);
+      let retireYear = birthDate.getFullYear() + 60;
+      if (birthDate.getMonth() + 1 > 9 || (birthDate.getMonth() + 1 === 9 && birthDate.getDate() > 30)) retireYear += 1;
+      
+      const retireDateStr = `${retireYear}-09-30`;
+      const empRetire = document.getElementById('empFormRetire');
+      const empRetireDisp = document.getElementById('empFormRetireDisplay');
+      if (empRetire) empRetire.value = retireDateStr;
+      if (empRetireDisp) empRetireDisp.value = `30 กันยายน พ.ศ. ${retireYear + 543}`;
+
+      const remaining = calculateRemainingTime(new Date(), new Date(retireDateStr));
+      const banner = document.getElementById('remainingAgeBanner');
+      const text = document.getElementById('remainingAgeText');
+
+      if (banner && text) {
+        if (remaining.isExpired) {
+          text.innerText = "ครบกำหนดเกษียณอายุราชการแล้ว";
+          banner.className = "p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 flex items-center gap-2";
+        } else {
+          text.innerText = `${remaining.years} ปี ${remaining.months} เดือน ${remaining.days} วัน`;
+          banner.className = "p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 flex items-center gap-2";
+        }
+        banner.classList.remove('hidden');
+      }
+    }
+
+    function calculateRemainingTime(from, to) {
+      if (from >= to) return { isExpired: true, years: 0, months: 0, days: 0 };
+      let years = to.getFullYear() - from.getFullYear();
+      let months = to.getMonth() - from.getMonth();
+      let days = to.getDate() - from.getDate();
+
+      if (days < 0) {
+        months -= 1;
+        days += new Date(to.getFullYear(), to.getMonth(), 0).getDate();
+      }
+      if (months < 0) {
+        years -= 1;
+        months += 12;
+      }
+      return { isExpired: false, years, months, days };
+    }
+
+    // 5. DOM CONTENT LOADED EVENT
+    window.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      initDropdownOptions();
+      initThaiDatePicker();
+      await loadSystemSettings();
+      await loadAllData();
+      checkAuthPersistence();
+    });
+
+    function showLoader(show = true, text = "กำลังประมวลผลข้อมูล...") {
+      const loader = document.getElementById('globalLoader');
+      const loaderText = document.getElementById('globalLoaderText');
+      if (loaderText) loaderText.innerText = text;
+      if (loader) {
+        if (show) loader.classList.remove('hidden');
+        else loader.classList.add('hidden');
+      }
+    }
+
+    function togglePasswordVisibility(inputId, iconId) {
+      const input = document.getElementById(inputId);
+      const icon = document.getElementById(iconId);
+      if (input && icon) {
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.setAttribute('data-lucide', 'eye-off');
+        } else {
+          input.type = 'password';
+          icon.setAttribute('data-lucide', 'eye');
+        }
+        lucide.createIcons();
+      }
+    }
+
+    async function logActivity(actionText) {
+      if (!currentUser) return;
+      try {
+        const logEntry = {
+          user_id: currentUser.id,
+          username: currentUser.username,
+          full_name: currentUser.full_name,
+          role: currentUser.role,
+          action: actionText,
+          user_agent: navigator.userAgent.substring(0, 150)
+        };
+        await dbClient.from('activity_logs').insert([logEntry]);
+      } catch (e) {}
+    }
+
+    function checkAuthPersistence() {
+      const sessionData = localStorage.getItem('pe_user_session');
+      if (sessionData) {
+        try {
+          const session = JSON.parse(sessionData);
+          const loginTime = session.loginTime || 0;
+          const now = Date.now();
+          const maxSessionDuration = 24 * 60 * 60 * 1000; // 24 ชั่วโมง Auto-Logout
+
+          if (now - loginTime > maxSessionDuration) {
+            alert('เซสชันการเข้าใช้งานหมดอายุ (ครบ 24 ชั่วโมง) กรุณาเข้าสู่ระบบใหม่อีกครั้ง');
+            localStorage.removeItem('pe_user_session');
+            navigateLanding();
+            return;
+          }
+
+          currentUser = session.user;
+          applyUserSession();
+          return;
+        } catch(e){}
+      }
+      navigateLanding();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername')?.value.trim();
+      const p = document.getElementById('loginPassword')?.value.trim();
+      showLoader(true);
+
+      try {
+        const { data, error } = await dbClient.from('users').select('*').eq('username', u).eq('password', p).single();
+        if (error || !data) throw new Error('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง');
+
+        currentUser = data;
+        const sessionPayload = {
+          user: currentUser,
+          loginTime: Date.now()
+        };
+        localStorage.setItem('pe_user_session', JSON.stringify(sessionPayload));
+        
+        await logActivity('เข้าสู่ระบบสำเร็จ (Login)');
+        closeLoginModal();
+        applyUserSession();
+      } catch (err) {
+        const alertBox = document.getElementById('loginAlert');
+        const alertText = document.getElementById('loginAlertText');
+        if (alertText) alertText.innerText = err.message;
+        if (alertBox) alertBox.classList.remove('hidden');
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function confirmLogout() {
+      if (currentUser) {
+        await logActivity('ออกจากระบบ (Logout)');
+      }
+      closeLogoutModal();
+      localStorage.removeItem('pe_user_session');
+      currentUser = null;
+      navigateLanding();
+    }
+
+    async function loadActivityLogs() {
+      if (!currentUser || currentUser.role !== 'admin') return;
+      try {
+        const { data, error } = await dbClient
+          .from('activity_logs')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(100);
+
+        if (!error && data) {
+          activityLogs = data;
+          renderActivityLogsTable();
+        }
+      } catch (e) {}
+    }
+
+    function renderActivityLogsTable() {
+      const tbody = document.getElementById('activityLogTableBody');
+      const emptyState = document.getElementById('logEmptyState');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (activityLogs.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+      if (emptyState) emptyState.classList.add('hidden');
+
+      activityLogs.forEach(log => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+        const dateStr = new Date(log.created_at).toLocaleString('th-TH');
+        
+        let roleBadge = "bg-sky-500/20 text-sky-300";
+        if (log.role === 'admin') roleBadge = "bg-rose-500/20 text-rose-300 font-bold";
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-slate-400">${dateStr}</td>
+          <td class="py-3 px-4 font-semibold text-white">${log.full_name} (@${log.username})</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-[10px] ${roleBadge}">${log.role.toUpperCase()}</span></td>
+          <td class="py-3 px-4 text-sky-300">${log.action}</td>
+          <td class="py-3 px-4 text-[10px] text-slate-400 truncate max-w-xs">${log.user_agent || '-'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    async function clearActivityLogs() {
+      if (!confirm('ต้องการล้างประวัติการเข้าใช้งานทั้งหมดหรือไม่?')) return;
+      showLoader(true);
+      try {
+        await dbClient.from('activity_logs').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        activityLogs = [];
+        renderActivityLogsTable();
+      } catch (e) {
+        alert('เกิดข้อผิดพลาดในการลบประวัติ');
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function previewUserAvatar(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width, height = img.height;
+          if (width > 400) { height = Math.round((height * 400) / width); width = 400; }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            compressedUserAvatarBlob = blob;
+            const preview = document.getElementById('userAvatarPreview');
+            if (preview) preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="w-full h-full object-cover"/>`;
+          }, 'image/jpeg', 0.85);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function renderUserTable() {
+      const tbody = document.getElementById('userTableBody');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      userList.forEach(u => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+
+        const avatarHTML = u.avatar_url 
+          ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded-full object-cover border border-white/20">`
+          : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-xs border border-white/10">${u.full_name.charAt(0)}</div>`;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4 flex items-center gap-2.5">
+            ${avatarHTML}
+            <span class="font-medium text-white">${u.full_name}</span>
+          </td>
+          <td class="py-3 px-4 font-mono text-slate-300">${u.username}</td>
+          <td class="py-3 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold ${
+              u.role === 'admin' ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' :
+              u.role === 'hr' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
+            }">${u.role.toUpperCase()}</span>
+          </td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-2">
+              <button onclick="editUser('${u.id}')" class="p-1.5 text-sky-400 hover:bg-white/10 rounded-lg transition"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+              <button onclick="deleteUser('${u.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function openUserModal(user = null) {
+      const form = document.getElementById('userForm');
+      if (form) form.reset();
+
+      const formId = document.getElementById('userFormId');
+      const avatarUrl = document.getElementById('userAvatarUrl');
+      const title = document.getElementById('modalUserTitle');
+      if (formId) formId.value = user ? user.id : '';
+      if (avatarUrl) avatarUrl.value = user ? (user.avatar_url || '') : '';
+      if (title) title.innerText = user ? 'แก้ไขผู้ใช้งาน' : 'เพิ่มผู้ใช้งานระบบใหม่';
+      compressedUserAvatarBlob = null;
+
+      const preview = document.getElementById('userAvatarPreview');
+      if (user && user.avatar_url) {
+        if (preview) preview.innerHTML = `<img src="${user.avatar_url}" class="w-full h-full object-cover">`;
+      } else {
+        if (preview) preview.innerHTML = `<i data-lucide="user" class="w-5 h-5 text-slate-400"></i>`;
+      }
+
+      if (user) {
+        const fullName = document.getElementById('userFormFullName');
+        const username = document.getElementById('userFormUsername');
+        const password = document.getElementById('userFormPassword');
+        const role = document.getElementById('userFormRole');
+        if (fullName) fullName.value = user.full_name || '';
+        if (username) username.value = user.username || '';
+        if (password) password.value = user.password || '';
+        if (role) role.value = user.role || 'employee';
+      }
+
+      const modal = document.getElementById('modalUser');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeUserModal() { 
+      const modal = document.getElementById('modalUser');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    async function handleSaveUser(e) {
+      e.preventDefault();
+      showLoader(true);
+      try {
+        const userId = document.getElementById('userFormId')?.value;
+        let avatarUrl = document.getElementById('userAvatarUrl')?.value;
+
+        if (compressedUserAvatarBlob) {
+          const fileName = `user_avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+          const { error: uploadErr } = await dbClient.storage.from('avatars').upload(fileName, compressedUserAvatarBlob, { contentType: 'image/jpeg', upsert: true });
+          if (!uploadErr) avatarUrl = dbClient.storage.from('avatars').getPublicUrl(fileName).data.publicUrl;
+        }
+
+        const payload = {
+          full_name: document.getElementById('userFormFullName')?.value.trim(),
+          username: document.getElementById('userFormUsername')?.value.trim(),
+          password: document.getElementById('userFormPassword')?.value.trim(),
+          role: document.getElementById('userFormRole')?.value,
+          avatar_url: avatarUrl
+        };
+
+        if (userId) {
+          await dbClient.from('users').update(payload).eq('id', userId);
+          await logActivity(`แก้ไขข้อมูลผู้ใช้งาน (@${payload.username})`);
+        } else {
+          await dbClient.from('users').insert([payload]);
+          await logActivity(`เพิ่มผู้ใช้งานใหม่ (@${payload.username})`);
+        }
+
+        closeUserModal();
+        await loadAllData();
+      } catch (err) {
+        alert('เกิดข้อผิดพลาด: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function editUser(id) {
+      const user = userList.find(u => u.id === id);
+      if (user) openUserModal(user);
+    }
+
+    async function deleteUser(id) {
+      if (id === currentUser.id) return alert('ไม่สามารถลบบัญชีที่กำลังล็อกอินอยู่ได้');
+      if (!confirm('คุณแน่ใจว่าต้องการลบผู้ใช้งานนี้?')) return;
+      showLoader(true);
+      try {
+        const targetUser = userList.find(u => u.id === id);
+        await dbClient.from('users').delete().eq('id', id);
+        if (targetUser) await logActivity(`ลบผู้ใช้งาน (@${targetUser.username})`);
+        await loadAllData();
+      } catch (err) {
+        alert('ไม่สามารถลบได้: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function navigate(section) {
+      const landingView = document.getElementById('landingView');
+      const mainAppView = document.getElementById('mainAppView');
+      const mobileBottomNav = document.getElementById('mobileBottomNav');
+
+      if (landingView) landingView.classList.add('hidden');
+      if (mainAppView) mainAppView.classList.remove('hidden');
+      if (mobileBottomNav) mobileBottomNav.classList.remove('hidden');
+
+      const sections = ['dashboard', 'employees', 'shirts', 'reports', 'profile', 'users', 'logs'];
+      sections.forEach(s => {
+        const el = document.getElementById(`sec-${s}`);
+        if (el) el.classList.add('hidden');
+        const navEl = document.getElementById(`nav-${s}`);
+        if (navEl) navEl.classList.remove('bg-white/15', 'text-white', 'border', 'border-white/10');
+      });
+
+      const activeSec = document.getElementById(`sec-${section}`);
+      if (activeSec) activeSec.classList.remove('hidden');
+
+      const activeNav = document.getElementById(`nav-${section}`);
+      if (activeNav) activeNav.classList.add('bg-white/15', 'text-white', 'border', 'border-white/10');
+
+      const titles = {
+        'dashboard': 'แดชบอร์ดภาพรวม',
+        'employees': 'ข้อมูลบุคลากรครูพละ สพม.บุรีรัมย์',
+        'shirts': 'สั่งจองเสื้อ & รายงานคำสั่งจอง',
+        'reports': 'รายงานสถิติและการเกษียณอายุราชการ',
+        'profile': 'ข้อมูลส่วนตัวของฉัน',
+        'users': 'จัดการผู้ใช้งานระบบ (Admin)',
+        'logs': 'ประวัติการเข้าใช้งานระบบ (Activity Logs)'
+      };
+      const titleEl = document.getElementById('pageTitle');
+      if (titleEl && titles[section]) titleEl.innerText = titles[section];
+
+      if (section === 'dashboard') renderCharts();
+      if (section === 'shirts') renderShirtTable();
+      if (section === 'reports') renderRetirementReport();
+      if (section === 'profile') renderMyProfile();
+      if (section === 'logs') loadActivityLogs();
+
+      lucide.createIcons();
+    }
+
+    function startImageCrop(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imageTarget = document.getElementById('cropperImageTarget');
+        if (imageTarget) imageTarget.src = e.target.result;
+        const modal = document.getElementById('modalCropper');
+        if (modal) modal.classList.remove('hidden');
+
+        if (cropperInstance) cropperInstance.destroy();
+        if (imageTarget) {
+          cropperInstance = new Cropper(imageTarget, {
+            aspectRatio: 1,
+            viewMode: 1,
+            autoCropArea: 0.9,
+            responsive: true
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function closeCropperModal() {
+      if (cropperInstance) cropperInstance.destroy();
+      const modal = document.getElementById('modalCropper');
+      if (modal) modal.classList.add('hidden');
+    }
+
+    function applyImageCrop() {
+      if (!cropperInstance) return;
+      const canvas = cropperInstance.getCroppedCanvas({ width: 500, height: 500, imageSmoothingQuality: 'high' });
+      canvas.toBlob((blob) => {
+        compressedImageBlob = blob;
+        const preview = document.getElementById('empAvatarPreview');
+        if (preview) preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="w-full h-full object-cover"/>`;
+        closeCropperModal();
+      }, 'image/jpeg', 0.85);
+    }
+
+    function viewDetailModal(name, position, school, district, code, phone, retire, avatarUrl) {
+      const fullNameEl = document.getElementById('detailFullName');
+      const posEl = document.getElementById('detailPosition');
+      const schoolEl = document.getElementById('detailSchool');
+      const codeEl = document.getElementById('detailCode');
+      const districtEl = document.getElementById('detailDistrict');
+      const phoneEl = document.getElementById('detailPhone');
+      const retireEl = document.getElementById('detailRetire');
+
+      if (fullNameEl) fullNameEl.innerText = name || '-';
+      if (posEl) posEl.innerText = position || '-';
+      if (schoolEl) schoolEl.innerText = school ? `โรงเรียน${school}` : '-';
+      if (codeEl) codeEl.innerText = code || '-';
+      if (districtEl) districtEl.innerText = district || '-';
+      if (phoneEl) phoneEl.innerText = phone || '-';
+      if (retireEl) retireEl.innerText = retire || '-';
+
+      const img = document.getElementById('detailAvatarImg');
+      const placeholder = document.getElementById('detailAvatarPlaceholder');
+      if (avatarUrl) {
+        if (img) { img.src = avatarUrl; img.classList.remove('hidden'); }
+        if (placeholder) placeholder.classList.add('hidden');
+      } else {
+        if (img) img.classList.add('hidden');
+        if (placeholder) { placeholder.innerText = name ? name.charAt(0) : 'PE'; placeholder.classList.remove('hidden'); }
+      }
+      const modal = document.getElementById('modalDetail');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeDetailModal() { 
+      const modal = document.getElementById('modalDetail');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    function exportEmployeesExcel() {
+      if (employeeList.length === 0) return alert('ไม่มีข้อมูลสำหรับส่งออก');
+      const data = employeeList.map((e, index) => {
+        const rem = e.retire_date ? calculateRemainingTime(new Date(), new Date(e.retire_date)) : null;
+        const remStr = rem ? (rem.isExpired ? "เกษียณแล้ว" : `${rem.years} ปี ${rem.months} เดือน ${rem.days} วัน`) : "-";
+        const bTh = e.birth_date ? `${new Date(e.birth_date).getDate()}/${new Date(e.birth_date).getMonth()+1}/${new Date(e.birth_date).getFullYear()+543}` : "-";
+        const rTh = e.retire_date ? `30 ก.ย. ${new Date(e.retire_date).getFullYear()+543}` : "-";
+
+        return {
+          "ลำดับ": index + 1,
+          "รหัสประจำตัว": e.emp_code,
+          "คำนำหน้า": e.prefix || "นาย",
+          "ชื่อ-นามสกุล": e.full_name,
+          "เพศ": e.gender || "ชาย",
+          "ตำแหน่ง/วิทยฐานะ": e.position,
+          "โรงเรียน": e.school,
+          "สหวิทยาเขต": e.district,
+          "เบอร์โทรศัพท์": e.phone || "-",
+          "วันเดือนปีเกิด (พ.ศ.)": bTh,
+          "วันเกษียณอายุราชการ": rTh,
+          "อายุราชการคงเหลือ": remStr
+        };
+      });
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "รายชื่อครูพละ");
+      XLSX.writeFile(wb, `ทำเนียบบุคลากรครูพละ_สพมบุรีรัมย์_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function exportEmployeesPDF() { window.print(); }
+
+    function exportShirtOrdersExcel() {
+      if (shirtOrderList.length === 0) return alert('ไม่มีข้อมูลคำสั่งซื้อสำหรับส่งออก');
+      const data = shirtOrderList.map((o, index) => ({
+        "ลำดับ": index + 1,
+        "รหัส": o.emp_code,
+        "คำนำหน้า": o.prefix || "นาย",
+        "ชื่อ-นามสกุล": o.full_name,
+        "เพศ": o.gender || "ชาย",
+        "โรงเรียน": o.school,
+        "สหวิทยาเขต": o.district,
+        "ทรงเสื้อ": o.shirt_type,
+        "ขนาดไซส์": o.size,
+        "จำนวน (ตัว)": o.quantity,
+        "ยอดรวม (บาท)": o.total_price,
+        "สถานะการชำระเงิน": o.payment_status,
+        "หมายเหตุ": o.note || "-"
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "รายงานสั่งจองเสื้อ");
+      XLSX.writeFile(wb, `รายงานการสั่งจองเสื้อ_ครูพละ_สพมบุรีรัมย์_${new Date().toISOString().slice(0,10)}.xlsx`);
+    }
+
+    function exportShirtOrdersPDF() { window.print(); }
+
+    function openShirtOrderModal(order = null) {
+      const form = document.getElementById('shirtOrderForm');
+      if (form) form.reset();
+
+      const orderIdEl = document.getElementById('shirtOrderId');
+      const slipUrlEl = document.getElementById('shirtSlipUrl');
+      const titleEl = document.getElementById('modalShirtOrderTitle');
+
+      if (orderIdEl) orderIdEl.value = order ? order.id : '';
+      if (slipUrlEl) slipUrlEl.value = order ? (order.slip_url || '') : '';
+      if (titleEl) titleEl.innerHTML = `<i data-lucide="shirt" class="w-4 h-4 text-rose-400"></i> ${order ? 'แก้ไขรายการสั่งจองเสื้อ' : 'สั่งจองเสื้อบุคลากรครูพละ'}`;
+      
+      const slipBox = document.getElementById('slipPreviewBox');
+      const slipImg = document.getElementById('slipPreviewImg');
+      if (order && order.slip_url) {
+        if (slipImg) slipImg.src = order.slip_url;
+        if (slipBox) slipBox.classList.remove('hidden');
+      } else {
+        if (slipBox) slipBox.classList.add('hidden');
+      }
+
+      const empSelect = document.getElementById('shirtOrderEmpSelect');
+      if (empSelect) {
+        empSelect.innerHTML = '<option value="">-- เลือกครูพละผู้สั่งจอง --</option>';
+        employeeList.forEach(e => {
+          empSelect.innerHTML += `<option value="${e.id}">${e.prefix || ''}${e.full_name} (${e.school}) [${e.emp_code}]</option>`;
+        });
+        if (order) empSelect.value = order.employee_id;
+      }
+
+      if (order) {
+        const typeEl = document.getElementById('shirtOrderType');
+        const sizeEl = document.getElementById('shirtOrderSize');
+        const qtyEl = document.getElementById('shirtOrderQty');
+        const statusEl = document.getElementById('shirtOrderPaymentStatus');
+        const noteEl = document.getElementById('shirtOrderNote');
+
+        if (typeEl) typeEl.value = order.shirt_type || 'ทรงตรง (Unisex)';
+        if (sizeEl) sizeEl.value = order.size || 'L';
+        if (qtyEl) qtyEl.value = order.quantity || 1;
+        if (statusEl) statusEl.value = order.payment_status || 'รอชำระเงิน';
+        if (noteEl) noteEl.value = order.note || '';
+      }
+      calculateShirtTotalPrice();
+      
+      const modal = document.getElementById('modalShirtOrder');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeShirtOrderModal() { 
+      const modal = document.getElementById('modalShirtOrder');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    function calculateShirtTotalPrice() {
+      const qty = parseInt(document.getElementById('shirtOrderQty')?.value) || 1;
+      const unitPrice = parseFloat(appSettings.shirt_price) || 350.00;
+      const totalPriceEl = document.getElementById('shirtOrderTotalPrice');
+      if (totalPriceEl) totalPriceEl.value = (qty * unitPrice).toLocaleString('th-TH', { minimumFractionDigits: 2 });
+    }
+
+    function previewShirtSlipImage(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width, height = img.height;
+          if (width > 800) { height = Math.round((height * 800) / width); width = 800; }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            compressedSlipBlob = blob;
+            const slipImg = document.getElementById('slipPreviewImg');
+            const slipBox = document.getElementById('slipPreviewBox');
+            if (slipImg) slipImg.src = URL.createObjectURL(blob);
+            if (slipBox) slipBox.classList.remove('hidden');
+          }, 'image/jpeg', 0.8);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleSaveShirtOrder(e) {
+      e.preventDefault();
+      showLoader(true);
+
+      try {
+        const orderId = document.getElementById('shirtOrderId')?.value;
+        const empId = document.getElementById('shirtOrderEmpSelect')?.value;
+        const emp = employeeList.find(item => item.id === empId);
+        if (!emp) throw new Error("กรุณาเลือกบุคลากรครูพละ");
+
+        let slipUrl = document.getElementById('shirtSlipUrl')?.value;
+        if (compressedSlipBlob) {
+          const fileName = `slip_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+          const { error: uploadErr } = await dbClient.storage.from('avatars').upload(fileName, compressedSlipBlob, { contentType: 'image/jpeg', upsert: true });
+          if (!uploadErr) slipUrl = dbClient.storage.from('avatars').getPublicUrl(fileName).data.publicUrl;
+        }
+
+        const qty = parseInt(document.getElementById('shirtOrderQty')?.value) || 1;
+        const unitPrice = parseFloat(appSettings.shirt_price) || 350.00;
+
+        const payload = {
+          employee_id: emp.id,
+          emp_code: emp.emp_code,
+          prefix: emp.prefix || 'นาย',
+          full_name: emp.full_name,
+          gender: emp.gender || 'ชาย',
+          school: emp.school,
+          district: emp.district,
+          shirt_type: document.getElementById('shirtOrderType')?.value,
+          size: document.getElementById('shirtOrderSize')?.value,
+          quantity: qty,
+          total_price: qty * unitPrice,
+          payment_status: document.getElementById('shirtOrderPaymentStatus')?.value,
+          slip_url: slipUrl,
+          note: document.getElementById('shirtOrderNote')?.value.trim(),
+          updated_at: new Date().toISOString()
+        };
+
+        if (orderId) {
+          await dbClient.from('shirt_orders').update(payload).eq('id', orderId);
+          await logActivity(`แก้ไขรายการสั่งจองเสื้อ (${payload.full_name})`);
+        } else {
+          await dbClient.from('shirt_orders').insert([payload]);
+          await logActivity(`บันทึกการสั่งจองเสื้อใหม่ (${payload.full_name})`);
+        }
+
+        closeShirtOrderModal();
+        await loadAllData();
+        alert('บันทึกการสั่งจองเสื้อเรียบร้อยแล้ว');
+      } catch (err) {
+        alert('เกิดข้อผิดพลาด: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function deleteShirtOrder(id) {
+      if (!confirm('ต้องการลบรายการสั่งจองเสื้อนี้หรือไม่?')) return;
+      showLoader(true);
+      try {
+        await dbClient.from('shirt_orders').delete().eq('id', id);
+        await logActivity(`ลบรายการสั่งจองเสื้อ ID: ${id}`);
+        await loadAllData();
+      } catch (err) {
+        alert('ไม่สามารถลบได้: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function setShirtFilterTab(tab) {
+      currentShirtTab = tab;
+      ['all', 'ordered', 'unordered'].forEach(t => {
+        const btn = document.getElementById(`tabShirt${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        if (btn) btn.className = (t === tab) ? "gradient-btn px-3 py-1.5 rounded-xl text-xs font-medium text-white shadow-md border border-white/15" : "px-3 py-1.5 rounded-xl text-xs font-medium bg-white/5 hover:bg-white/10 text-slate-300 transition";
+      });
+      renderShirtTable();
+    }
+
+    function renderShirtTable() {
+      const tbody = document.getElementById('shirtTableBody');
+      const emptyState = document.getElementById('shirtEmptyState');
+      const kw = (document.getElementById('shirtSearchKeyword')?.value || '').toLowerCase().trim();
+      const dist = document.getElementById('shirtFilterDistrictSelect')?.value || '';
+      const gender = document.getElementById('shirtFilterGenderSelect')?.value || '';
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let trackingList = [];
+      const orderedEmpIds = new Set(shirtOrderList.map(o => o.employee_id));
+
+      employeeList.forEach(emp => {
+        const orders = shirtOrderList.filter(o => o.employee_id === emp.id);
+        if (orders.length > 0) {
+          orders.forEach(ord => trackingList.push({ type: 'ordered', emp, order: ord }));
+        } else {
+          trackingList.push({ type: 'unordered', emp, order: null });
+        }
+      });
+
+      let displayList = trackingList;
+
+      if (dist) displayList = displayList.filter(t => t.emp.district === dist);
+      if (gender) displayList = displayList.filter(t => (t.emp.gender || 'ชาย') === gender);
+
+      const totalFiltered = displayList.length;
+      const maleFiltered = displayList.filter(t => (t.emp.gender || 'ชาย') === 'ชาย').length;
+      const femaleFiltered = displayList.filter(t => t.emp.gender === 'หญิง').length;
+
+      const filterTotalEl = document.getElementById('shirtFilterTotal');
+      const filterMaleEl = document.getElementById('shirtFilterMale');
+      const filterFemaleEl = document.getElementById('shirtFilterFemale');
+
+      if (filterTotalEl) filterTotalEl.innerText = totalFiltered;
+      if (filterMaleEl) filterMaleEl.innerText = maleFiltered;
+      if (filterFemaleEl) filterFemaleEl.innerText = femaleFiltered;
+
+      if (currentShirtTab === 'ordered') displayList = displayList.filter(t => t.type === 'ordered');
+      else if (currentShirtTab === 'unordered') displayList = displayList.filter(t => t.type === 'unordered');
+
+      if (kw) {
+        displayList = displayList.filter(t => {
+          return (t.emp.full_name || '').toLowerCase().includes(kw) ||
+                 (t.emp.school || '').toLowerCase().includes(kw) ||
+                 (t.emp.district || '').toLowerCase().includes(kw) ||
+                 (t.emp.emp_code || '').toLowerCase().includes(kw);
+        });
+      }
+
+      const countAllEl = document.getElementById('countShirtAll');
+      const countOrderedEl = document.getElementById('countShirtOrdered');
+      const countUnorderedEl = document.getElementById('countShirtUnordered');
+
+      if (countAllEl) countAllEl.innerText = totalFiltered;
+      if (countOrderedEl) countOrderedEl.innerText = displayList.filter(t => t.type === 'ordered').length;
+      if (countUnorderedEl) countUnorderedEl.innerText = displayList.filter(t => t.type === 'unordered').length;
+
+      const totalQty = shirtOrderList.reduce((acc, cur) => acc + (parseInt(cur.quantity) || 1), 0);
+      const totalAmount = shirtOrderList.reduce((acc, cur) => acc + parseFloat(cur.total_price || 0), 0);
+      const paidAmount = shirtOrderList.filter(o => o.payment_status === 'ชำระเงินแล้ว').reduce((acc, cur) => acc + parseFloat(cur.total_price || 0), 0);
+      const unpaidAmount = totalAmount - paidAmount;
+
+      const sumQtyEl = document.getElementById('summaryShirtTotalQty');
+      const sumAmountEl = document.getElementById('summaryShirtTotalAmount');
+      const sumPaidEl = document.getElementById('summaryShirtPaidAmount');
+      const sumUnpaidEl = document.getElementById('summaryShirtUnpaidAmount');
+
+      if (sumQtyEl) sumQtyEl.innerText = `${totalQty} ตัว`;
+      if (sumAmountEl) sumAmountEl.innerText = `฿${totalAmount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+      if (sumPaidEl) sumPaidEl.innerText = `฿${paidAmount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+      if (sumUnpaidEl) sumUnpaidEl.innerText = `฿${unpaidAmount.toLocaleString('th-TH', { minimumFractionDigits: 2 })}`;
+
+      if (displayList.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+      if (emptyState) emptyState.classList.add('hidden');
+
+      displayList.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition-colors";
+        const hasOrder = item.type === 'ordered';
+        const ord = item.order;
+
+        let statusBadge = hasOrder 
+          ? `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">สั่งจองแล้ว</span>`
+          : `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">ยังไม่สั่งจอง</span>`;
+
+        let paymentBadge = '-';
+        if (hasOrder) {
+          if (ord.payment_status === 'ชำระเงินแล้ว') paymentBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-sky-500/20 text-sky-300">ชำระเงินแล้ว</span>`;
+          else if (ord.payment_status === 'รอชำระเงิน') paymentBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-500/20 text-amber-300">รอชำระเงิน</span>`;
+          else paymentBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-500/20 text-slate-300">ยกเลิก</span>`;
+        }
+
+        const canManage = currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr');
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="font-semibold text-white cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${item.emp.prefix || ''}${item.emp.full_name}', '${item.emp.position}', '${item.emp.school}', '${item.emp.district}', '${item.emp.emp_code}', '${item.emp.phone || '-'}', '${item.emp.retire_date || '-'}', '${item.emp.avatar_url || ''}')">${item.emp.prefix || ''}${item.emp.full_name}</div>
+            <div class="text-[10px] text-rose-300 font-mono">${item.emp.emp_code}</div>
+          </td>
+          <td class="py-3 px-4">${item.emp.gender || 'ชาย'}</td>
+          <td class="py-3 px-4">
+            <div class="text-slate-200">${item.emp.school}</div>
+            <div class="text-[10px] text-sky-400">${item.emp.district}</div>
+          </td>
+          <td class="py-3 px-4">${statusBadge}</td>
+          <td class="py-3 px-4 font-mono">${hasOrder ? `${ord.shirt_type} (${ord.size})` : '-'}</td>
+          <td class="py-3 px-4 font-mono font-bold">${hasOrder ? `${ord.quantity} ตัว` : '-'}</td>
+          <td class="py-3 px-4 font-mono text-rose-300">${hasOrder ? `฿${Number(ord.total_price).toLocaleString()}` : '-'}</td>
+          <td class="py-3 px-4">${paymentBadge}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              ${hasOrder ? `
+                <button onclick='openShirtOrderModal(${JSON.stringify(ord)})' class="p-1.5 text-sky-400 hover:bg-white/10 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>
+                ${canManage ? `<button onclick="deleteShirtOrder('${ord.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition" title="ลบ"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+              ` : `
+                <button onclick="quickOrderForEmployee('${item.emp.id}')" class="gradient-btn px-2.5 py-1 text-white text-[10px] rounded-lg font-medium shadow-sm transition border border-white/10">สั่งจอง</button>
+              `}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      renderShirtSizeBreakdown();
+      lucide.createIcons();
+    }
+
+    function quickOrderForEmployee(empId) {
+      const emp = employeeList.find(e => e.id === empId);
+      if (!emp) return;
+      openShirtOrderModal();
+      const empSelect = document.getElementById('shirtOrderEmpSelect');
+      if (empSelect) empSelect.value = emp.id;
+    }
+
+    function renderShirtSizeBreakdown() {
+      const grid = document.getElementById('shirtSizeSummaryGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const sizes = ['SS', 'S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'];
+      const counts = {};
+      sizes.forEach(s => counts[s] = 0);
+      shirtOrderList.forEach(o => { if (counts[o.size] !== undefined) counts[o.size] += parseInt(o.quantity) || 1; });
+
+      sizes.forEach(s => {
+        grid.innerHTML += `
+          <div class="fintech-card p-2.5 rounded-xl border border-white/10">
+            <span class="text-[10px] text-slate-400 block font-mono">Size ${s}</span>
+            <span class="text-sm font-bold text-rose-400 font-mono mt-0.5 block">${counts[s]} ตัว</span>
+          </div>
+        `;
+      });
+    }
+
+    function downloadCSVTemplate() {
+      let csv = "\uFEFFรหัสประจำตัว,คำนำหน้า,ชื่อ-นามสกุล,เพศ,ตำแหน่ง,สหวิทยาเขต,โรงเรียน,เบอร์โทรศัพท์,วันเดือนปีเกิด(YYYY-MM-DD)\n";
+      csv += "PE-2569-0001,นาย,สมชาย มุ่งมั่น,ชาย,ครูชำนาญการ,สหวิทยาเขตกระสัง,กระสังพิทยาคม,0812345678,1985-05-15\n";
+      csv += "PE-2569-0002,นางสาว,ใจดี รักเรียน,หญิง,พนักงานราชการ,สหวิทยาเขตนางรอง,นางรอง,0898765432,1992-10-20\n";
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Template_นำเข้าครูพละ_สพมบุรีรัมย์.csv`;
+      a.click();
+    }
+
+    function openBulkImportModal() {
+      const csvInput = document.getElementById('bulkCsvFileInput');
+      const fileNameDisp = document.getElementById('bulkFileNameDisplay');
+      const preview = document.getElementById('bulkImportPreview');
+      const btnExec = document.getElementById('btnExecuteBulkImport');
+
+      if (csvInput) csvInput.value = '';
+      if (fileNameDisp) fileNameDisp.innerText = 'UTF-8 Encoded .csv';
+      if (preview) preview.classList.add('hidden');
+      if (btnExec) btnExec.disabled = true;
+
+      bulkParsedRows = [];
+      const modal = document.getElementById('modalBulkImport');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeBulkImportModal() { 
+      const modal = document.getElementById('modalBulkImport');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    function handleBulkFileSelect(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fileNameDisp = document.getElementById('bulkFileNameDisplay');
+      if (fileNameDisp) fileNameDisp.innerText = `${file.name} (${(file.size/1024).toFixed(1)} KB)`;
+      const reader = new FileReader();
+      reader.onload = (evt) => parseCSVText(evt.target.result);
+      reader.readAsText(file);
+    }
+
+    function parseCSVText(csvText) {
+      const lines = csvText.split(/\r\n|\n/).filter(line => line.trim() !== '');
+      if (lines.length < 2) return alert('ไฟล์ไม่มีข้อมูลบุคลากร');
+
+      bulkParsedRows = [];
+      const previewBox = document.getElementById('bulkImportPreview');
+      if (previewBox) previewBox.innerHTML = '';
+
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',').map(c => c.replace(/^"|"$/g, '').trim());
+        if (cols.length >= 6) {
+          const emp_code = cols[0] || generateAutoEmpCode();
+          const prefix = cols[1] || 'นาย';
+          const full_name = cols[2];
+          const gender = cols[3] || 'ชาย';
+          const position = cols[4] || 'ครูผู้ช่วย';
+          const district = cols[5] || 'สหวิทยาเขตเมืองบุรีรัมย์';
+          const school = cols[6] || '';
+          const phone = cols[7] || '';
+          const birth_date = cols[8] || null;
+
+          let retire_date = null;
+          if (birth_date) {
+            const b = new Date(birth_date);
+            if (!isNaN(b.getTime())) {
+              let rYear = b.getFullYear() + 60;
+              if (b.getMonth() + 1 > 9 || (b.getMonth() + 1 === 9 && b.getDate() > 30)) rYear += 1;
+              retire_date = `${rYear}-09-30`;
+            }
+          }
+          bulkParsedRows.push({ emp_code, prefix, full_name, gender, position, district, school, phone, birth_date, retire_date });
+          if (previewBox) previewBox.innerHTML += `<div>${i}. ${prefix}${full_name} (${school} - ${district})</div>`;
+        }
+      }
+
+      const btnExec = document.getElementById('btnExecuteBulkImport');
+      if (bulkParsedRows.length > 0) {
+        if (previewBox) previewBox.classList.remove('hidden');
+        if (btnExec) {
+          btnExec.disabled = false;
+          btnExec.innerText = `นำเข้า ${bulkParsedRows.length} รายการ`;
+        }
+      }
+    }
+
+    async function executeBulkImport() {
+      if (bulkParsedRows.length === 0) return;
+      showLoader(true, `กำลังนำเข้า ${bulkParsedRows.length} รายการ...`);
+      try {
+        const { error } = await dbClient.from('employees').upsert(bulkParsedRows, { onConflict: 'emp_code' });
+        if (error) throw error;
+        await logActivity(`นำเข้าข้อมูลบุคลากรแบบกลุ่ม (${bulkParsedRows.length} รายการ)`);
+        closeBulkImportModal();
+        await loadAllData();
+        alert(`นำเข้าข้อมูลบุคลากรสำเร็จ ${bulkParsedRows.length} คน`);
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการนำเข้า: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function renderRetirementReport() {
+      const selectedYear = parseInt(document.getElementById('reportYearSelect')?.value || new Date().getFullYear());
+      const tbody = document.getElementById('reportTableBody');
+      const emptyState = document.getElementById('reportEmptyState');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const retiringList = employeeList.filter(e => {
+        if (!e.retire_date) return false;
+        return new Date(e.retire_date).getFullYear() === selectedYear;
+      });
+
+      const countEl = document.getElementById('reportYearRetireCount');
+      const percentEl = document.getElementById('reportYearRetirePercent');
+      const schoolsEl = document.getElementById('reportYearSchoolsCount');
+
+      if (countEl) countEl.innerText = `${retiringList.length} คน`;
+      const percent = employeeList.length > 0 ? ((retiringList.length / employeeList.length) * 100).toFixed(1) : 0;
+      if (percentEl) percentEl.innerText = `${percent}%`;
+      if (schoolsEl) schoolsEl.innerText = `${new Set(retiringList.map(e => e.school)).size} โรงเรียน`;
+
+      if (retiringList.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+      if (emptyState) emptyState.classList.add('hidden');
+
+      retiringList.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition";
+        const bThYear = emp.birth_date ? new Date(emp.birth_date).getFullYear() + 543 : '-';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono text-slate-400">${emp.emp_code}</td>
+          <td class="py-3 px-4 font-semibold text-white cursor-pointer hover:text-sky-300" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
+          <td class="py-3 px-4 text-slate-300">${emp.school}</td>
+          <td class="py-3 px-4 text-sky-400">${emp.district}</td>
+          <td class="py-3 px-4 font-mono text-slate-400">${bThYear}</td>
+          <td class="py-3 px-4 font-mono text-rose-400 font-bold">30 ก.ย. ${selectedYear + 543}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function renderEmployeeTable() {
+      const tbody = document.getElementById('employeeTableBody');
+      const emptyState = document.getElementById('employeeEmptyState');
+      const kw = (document.getElementById('filterKeyword')?.value || '').toLowerCase().trim();
+      const dist = document.getElementById('filterDistrictSelect')?.value || '';
+      const school = document.getElementById('filterSchoolSelect')?.value || '';
+      const pos = document.getElementById('filterPositionSelect')?.value || '';
+      const gender = document.getElementById('filterGenderSelect')?.value || '';
+
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const filtered = employeeList.filter(e => {
+        const mKw = !kw || (e.full_name || '').toLowerCase().includes(kw) || (e.emp_code || '').toLowerCase().includes(kw) || (e.phone || '').includes(kw);
+        const mDist = !dist || e.district === dist;
+        const mSchool = !school || e.school === school;
+        const mPos = !pos || e.position === pos;
+        const mGender = !gender || (e.gender || 'ชาย') === gender;
+        return mKw && mDist && mSchool && mPos && mGender;
+      });
+
+      const totalEl = document.getElementById('empCountTotal');
+      const maleEl = document.getElementById('empCountMale');
+      const femaleEl = document.getElementById('empCountFemale');
+
+      if (totalEl) totalEl.innerText = filtered.length;
+      if (maleEl) maleEl.innerText = filtered.filter(e => (e.gender || 'ชาย') === 'ชาย').length;
+      if (femaleEl) femaleEl.innerText = filtered.filter(e => e.gender === 'หญิง').length;
+
+      if (filtered.length === 0) {
+        if (emptyState) emptyState.classList.remove('hidden');
+        return;
+      }
+      if (emptyState) emptyState.classList.add('hidden');
+
+      filtered.forEach(emp => {
+        const tr = document.createElement('tr');
+        tr.className = "hover:bg-white/5 transition-colors";
+        const canEdit = currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr' || currentUser.id === emp.user_id);
+        const canDelete = currentUser && (currentUser.role === 'admin' || currentUser.role === 'hr');
+
+        let remainingBadge = '<span class="text-slate-500">-</span>';
+        if (emp.retire_date) {
+          const rem = calculateRemainingTime(new Date(), new Date(emp.retire_date));
+          remainingBadge = rem.isExpired 
+            ? `<span class="px-2 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300">เกษียณแล้ว</span>`
+            : `<span class="font-mono text-amber-300 font-medium">${rem.years} ปี ${rem.months} ด.</span>`;
+        }
+
+        const retireThYear = emp.retire_date ? new Date(emp.retire_date).getFullYear() + 543 : '-';
+        let avatarHTML = `
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-xs border border-white/10 overflow-hidden shadow-inner shrink-0 cursor-pointer hover:scale-105 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">
+            ${emp.avatar_url ? `<img src="${emp.avatar_url}" class="w-full h-full object-cover"/>` : `<span>${emp.full_name.charAt(0)}</span>`}
+          </div>
+        `;
+
+        tr.innerHTML = `
+          <td class="py-3 px-4">${avatarHTML}</td>
+          <td class="py-3 px-4">
+            <div class="font-semibold text-white cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</div>
+            <div class="text-[10px] text-rose-300 font-mono">${emp.emp_code}</div>
+          </td>
+          <td class="py-3 px-4">${emp.gender || 'ชาย'}</td>
+          <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
+          <td class="py-3 px-4"><div class="text-slate-200">${emp.school}</div><div class="text-[10px] text-sky-400">${emp.district}</div></td>
+          <td class="py-3 px-4">${remainingBadge}</td>
+          <td class="py-3 px-4 font-mono text-slate-300 text-[11px]">${retireThYear !== '-' ? `30 ก.ย. ${retireThYear}` : '-'}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              ${canEdit ? `<button onclick="editEmployee('${emp.id}')" class="p-1.5 text-sky-400 hover:bg-white/10 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>` : ''}
+              ${canDelete ? `<button onclick="deleteEmployee('${emp.id}')" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg transition" title="ลบ"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>` : ''}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+      lucide.createIcons();
+    }
+
+    function openEmployeeModal(emp = null) {
+      const form = document.getElementById('employeeForm');
+      if (form) form.reset();
+
+      compressedImageBlob = null;
+      
+      const empFormId = document.getElementById('empFormId');
+      const modalTitle = document.getElementById('modalEmployeeTitle');
+      const banner = document.getElementById('remainingAgeBanner');
+
+      if (empFormId) empFormId.value = emp ? emp.id : '';
+      if (modalTitle) modalTitle.innerText = emp ? 'แก้ไขข้อมูลครูพละ' : 'เพิ่มข้อมูลครูพละ สพม.บุรีรัมย์';
+      if (banner) banner.classList.add('hidden');
+
+      const preview = document.getElementById('empAvatarPreview');
+      const avatarUrlInput = document.getElementById('empAvatarUrl');
+
+      if (emp && emp.avatar_url) {
+        if (preview) preview.innerHTML = `<img src="${emp.avatar_url}" class="w-full h-full object-cover"/>`;
+        if (avatarUrlInput) avatarUrlInput.value = emp.avatar_url;
+      } else {
+        if (preview) preview.innerHTML = `<i data-lucide="image" class="w-6 h-6 text-slate-400"></i>`;
+        if (avatarUrlInput) avatarUrlInput.value = '';
+      }
+
+      if (emp) {
+        const empCode = document.getElementById('empFormCode');
+        const prefix = document.getElementById('empFormPrefix');
+        const gender = document.getElementById('empFormGender');
+        const fullName = document.getElementById('empFormName');
+        const position = document.getElementById('empFormPosition');
+        const phone = document.getElementById('empFormPhone');
+        const district = document.getElementById('empFormDistrict');
+        const school = document.getElementById('empFormSchool');
+
+        if (empCode) empCode.value = emp.emp_code || '';
+        if (prefix) prefix.value = emp.prefix || 'นาย';
+        if (gender) gender.value = emp.gender || 'ชาย';
+        if (fullName) fullName.value = emp.full_name || '';
+        if (position) position.value = emp.position || 'ครูผู้ช่วย';
+        if (phone) phone.value = emp.phone || '';
+        if (district) {
+          district.value = emp.district || '';
+          onFormDistrictChange();
+        }
+        if (school) school.value = emp.school || '';
+        setThaiDatePickerFromISO(emp.birth_date);
+      } else {
+        const empCode = document.getElementById('empFormCode');
+        if (empCode) empCode.value = generateAutoEmpCode();
+      }
+
+      const modal = document.getElementById('modalEmployee');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeEmployeeModal() { 
+      const modal = document.getElementById('modalEmployee');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    async function handleSaveEmployee(e) {
+      e.preventDefault();
+      showLoader(true);
+
+      try {
+        const empId = document.getElementById('empFormId')?.value;
+        let avatarUrl = document.getElementById('empAvatarUrl')?.value;
+
+        if (compressedImageBlob) {
+          const fileName = `avatar_${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+          const { error: uploadErr } = await dbClient.storage.from('avatars').upload(fileName, compressedImageBlob, { contentType: 'image/jpeg', upsert: true });
+          if (!uploadErr) avatarUrl = dbClient.storage.from('avatars').getPublicUrl(fileName).data.publicUrl;
+        }
+
+        const payload = {
+          emp_code: document.getElementById('empFormCode')?.value.trim(),
+          prefix: document.getElementById('empFormPrefix')?.value,
+          full_name: document.getElementById('empFormName')?.value.trim(),
+          gender: document.getElementById('empFormGender')?.value,
+          position: document.getElementById('empFormPosition')?.value,
+          phone: document.getElementById('empFormPhone')?.value.trim(),
+          school: document.getElementById('empFormSchool')?.value.trim(),
+          district: document.getElementById('empFormDistrict')?.value,
+          birth_date: document.getElementById('empFormBirth')?.value || null,
+          retire_date: document.getElementById('empFormRetire')?.value || null,
+          avatar_url: avatarUrl,
+          updated_at: new Date().toISOString()
+        };
+
+        if (empId) {
+          await dbClient.from('employees').update(payload).eq('id', empId);
+          await logActivity(`แก้ไขข้อมูลครูพละ (${payload.prefix}${payload.full_name})`);
+        } else {
+          payload.user_id = currentUser ? currentUser.id : null;
+          await dbClient.from('employees').insert([payload]);
+          await logActivity(`เพิ่มข้อมูลครูพละใหม่ (${payload.prefix}${payload.full_name})`);
+        }
+
+        closeEmployeeModal();
+        await loadAllData();
+        alert('บันทึกข้อมูลบุคลากรครูพละเรียบร้อยแล้ว');
+      } catch (err) {
+        alert('เกิดข้อผิดพลาดในการบันทึก: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function editEmployee(id) {
+      const emp = employeeList.find(e => e.id === id);
+      if (emp) openEmployeeModal(emp);
+    }
+
+    async function deleteEmployee(id) {
+      if (!confirm('คุณแน่ใจว่าต้องการลบข้อมูลครูพละท่านนี้ใช่หรือไม่?')) return;
+      showLoader(true);
+      try {
+        const targetEmp = employeeList.find(e => e.id === id);
+        await dbClient.from('employees').delete().eq('id', id);
+        if (targetEmp) await logActivity(`ลบข้อมูลครูพละ (${targetEmp.prefix || ''}${targetEmp.full_name})`);
+        await loadAllData();
+      } catch (err) {
+        alert('ไม่สามารถลบข้อมูลได้: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    async function loadAllData() {
+      showLoader(true);
+      try {
+        const { data: emps } = await dbClient.from('employees').select('*').order('created_at', { ascending: false });
+        if (emps) employeeList = emps;
+
+        const { data: shirts } = await dbClient.from('shirt_orders').select('*').order('created_at', { ascending: false });
+        if (shirts) shirtOrderList = shirts;
+
+        if (currentUser && currentUser.role === 'admin') {
+          const { data: usrs } = await dbClient.from('users').select('*').order('created_at', { ascending: false });
+          if (usrs) userList = usrs;
+        }
+
+        renderLandingOverview();
+        renderDashboardStats();
+        renderEmployeeTable();
+        renderShirtTable();
+        renderRetirementReport();
+        if (currentUser && currentUser.role === 'admin') renderUserTable();
+
+      } catch (err) {
+        console.error(err);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function renderDashboardStats() {
+      const totalTeachersEl = document.getElementById('statTotalTeachers');
+      const districtsEl = document.getElementById('statDistricts');
+      const orderedCountEl = document.getElementById('statOrderedCount');
+      const unorderedCountEl = document.getElementById('statUnorderedCount');
+
+      if (totalTeachersEl) totalTeachersEl.innerText = employeeList.length;
+      if (districtsEl) districtsEl.innerText = 9;
+      
+      const orderedEmpIds = new Set(shirtOrderList.map(o => o.employee_id));
+      if (orderedCountEl) orderedCountEl.innerText = orderedEmpIds.size;
+      if (unorderedCountEl) unorderedCountEl.innerText = employeeList.length - orderedEmpIds.size;
+      renderCharts();
+    }
+
+    function renderCharts() {
+      const districtCounts = {};
+      Object.keys(DISTRICT_SCHOOLS_MAP).forEach(d => districtCounts[d] = 0);
+      employeeList.forEach(e => { if (districtCounts[e.district] !== undefined) districtCounts[e.district]++; });
+
+      if (chartDistrict) chartDistrict.destroy();
+      const ctxD = document.getElementById('districtChart')?.getContext('2d');
+      if (ctxD) {
+        chartDistrict = new Chart(ctxD, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(districtCounts),
+            datasets: [{
+              data: Object.values(districtCounts),
+              backgroundColor: ['#f43f5e', '#0284c7', '#c084fc', '#818cf8', '#34d399', '#fbbf24', '#22d3ee', '#fb7185', '#94a3b8'],
+              borderWidth: 2,
+              borderColor: '#090d16'
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 9 }, boxWidth: 10 } } } }
+        });
+      }
+
+      const posCounts = {};
+      employeeList.forEach(e => { const p = e.position || 'ไม่ระบุ'; posCounts[p] = (posCounts[p] || 0) + 1; });
+
+      if (chartPosition) chartPosition.destroy();
+      const ctxP = document.getElementById('positionChart')?.getContext('2d');
+      if (ctxP) {
+        chartPosition = new Chart(ctxP, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(posCounts),
+            datasets: [{ label: 'จำนวนครู (คน)', data: Object.values(posCounts), backgroundColor: 'rgba(2, 132, 199, 0.75)', borderColor: '#0284c7', borderWidth: 1, borderRadius: 8 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } }
+          }
+        });
+      }
+    }
+
+    function renderLandingOverview() {
+      const totalTeachersEl = document.getElementById('landingTotalTeachers');
+      const districtsEl = document.getElementById('landingTotalDistricts');
+      const totalShirtsEl = document.getElementById('landingTotalShirts');
+      const retireSoonEl = document.getElementById('landingRetireSoon');
+
+      if (totalTeachersEl) totalTeachersEl.innerText = employeeList.length;
+      if (districtsEl) districtsEl.innerText = 9;
+      if (totalShirtsEl) totalShirtsEl.innerText = shirtOrderList.reduce((acc, cur) => acc + (parseInt(cur.quantity) || 1), 0);
+
+      const currentYear = new Date().getFullYear();
+      if (retireSoonEl) retireSoonEl.innerText = employeeList.filter(e => e.retire_date && new Date(e.retire_date).getFullYear() === currentYear).length;
+
+      const districtCounts = {};
+      Object.keys(DISTRICT_SCHOOLS_MAP).forEach(d => districtCounts[d] = 0);
+      employeeList.forEach(e => { if (districtCounts[e.district] !== undefined) districtCounts[e.district]++; });
+
+      if (landingChartDistrict) landingChartDistrict.destroy();
+      const ctxLD = document.getElementById('landingDistrictChart')?.getContext('2d');
+      if (ctxLD) {
+        landingChartDistrict = new Chart(ctxLD, {
+          type: 'doughnut',
+          data: {
+            labels: Object.keys(districtCounts),
+            datasets: [{
+              data: Object.values(districtCounts),
+              backgroundColor: ['#f43f5e', '#0284c7', '#c084fc', '#818cf8', '#34d399', '#fbbf24', '#22d3ee', '#fb7185', '#94a3b8'],
+              borderWidth: 2, borderColor: '#090d16'
+            }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { family: 'Sarabun', size: 9 }, boxWidth: 10 } } } }
+        });
+      }
+
+      const posCounts = {};
+      employeeList.forEach(e => { const p = e.position || 'ไม่ระบุ'; posCounts[p] = (posCounts[p] || 0) + 1; });
+
+      if (landingChartPosition) landingChartPosition.destroy();
+      const ctxLP = document.getElementById('landingPositionChart')?.getContext('2d');
+      if (ctxLP) {
+        landingChartPosition = new Chart(ctxLP, {
+          type: 'bar',
+          data: {
+            labels: Object.keys(posCounts),
+            datasets: [{ label: 'จำนวน (คน)', data: Object.values(posCounts), backgroundColor: 'rgba(244, 63, 94, 0.75)', borderColor: '#f43f5e', borderWidth: 1, borderRadius: 8 }]
+          },
+          options: {
+            responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255, 255, 255, 0.05)' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } }
+          }
+        });
+      }
+    }
+
+    async function loadSystemSettings() {
+      try {
+        const { data } = await dbClient.from('app_settings').select('*').eq('id', 1).single();
+        if (data) appSettings = { ...appSettings, ...data };
+        applySystemSettingsUI();
+      } catch (err) {}
+    }
+
+    function applySystemSettingsUI() {
+      const landingName = document.getElementById('landingAppName');
+      const landingSub = document.getElementById('landingAppSubName');
+      const sideName = document.getElementById('sidebarAppName');
+      const sideSub = document.getElementById('sidebarAppSubName');
+      const shirtPriceDisplay = document.getElementById('displayShirtPrice');
+
+      const footerMain = document.getElementById('footerMainText');
+      const footerDev = document.getElementById('footerDevText');
+      const footerMainAuth = document.getElementById('footerMainTextAuth');
+      const footerDevAuth = document.getElementById('footerDevTextAuth');
+
+      if (landingName) landingName.innerText = appSettings.app_name;
+      if (landingSub) landingSub.innerText = appSettings.app_sub_name;
+      if (sideName) sideName.innerText = appSettings.app_name;
+      if (sideSub) sideSub.innerText = appSettings.app_sub_name;
+      if (shirtPriceDisplay) shirtPriceDisplay.innerText = parseFloat(appSettings.shirt_price || 350).toLocaleString();
+
+      if (footerMain) footerMain.innerText = appSettings.footer_text || '© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์';
+      if (footerDev) footerDev.innerText = appSettings.developer_info || 'พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์';
+      if (footerMainAuth) footerMainAuth.innerText = appSettings.footer_text || '© 2026 สำนักงานเขตพื้นที่การศึกษามัธยมศึกษาบุรีรัมย์ สงวนลิขสิทธิ์';
+      if (footerDevAuth) footerDevAuth.innerText = appSettings.developer_info || 'พัฒนาโดย: กลุ่มสาระการเรียนรู้สุขศึกษาและพลศึกษา สพม.บุรีรัมย์';
+
+      document.title = `${appSettings.app_name} - ${appSettings.app_sub_name}`;
+
+      const landingLogo = document.getElementById('landingLogoContainer');
+      const sidebarLogo = document.getElementById('sidebarLogoContainer');
+      if (appSettings.logo_url) {
+        if (landingLogo) landingLogo.innerHTML = `<img src="${appSettings.logo_url}" class="w-full h-full object-cover">`;
+        if (sidebarLogo) sidebarLogo.innerHTML = `<img src="${appSettings.logo_url}" class="w-full h-full object-cover">`;
+      }
+      lucide.createIcons();
+    }
+
+    function openSettingsModal() {
+      if (!currentUser || currentUser.role !== 'admin') return alert('เฉพาะ Admin เท่านั้น');
+      const appNameInput = document.getElementById('settingAppNameInput');
+      const appSubInput = document.getElementById('settingAppSubNameInput');
+      const shirtPriceInput = document.getElementById('settingShirtPriceInput');
+      const footerTextInput = document.getElementById('settingFooterTextInput');
+      const devInfoInput = document.getElementById('settingDevInfoInput');
+      const logoUrlInput = document.getElementById('settingsLogoUrl');
+
+      if (appNameInput) appNameInput.value = appSettings.app_name || '';
+      if (appSubInput) appSubInput.value = appSettings.app_sub_name || '';
+      if (shirtPriceInput) shirtPriceInput.value = appSettings.shirt_price || 350;
+      if (footerTextInput) footerTextInput.value = appSettings.footer_text || '';
+      if (devInfoInput) devInfoInput.value = appSettings.developer_info || '';
+      if (logoUrlInput) logoUrlInput.value = appSettings.logo_url || '';
+      
+      const preview = document.getElementById('settingsLogoPreview');
+      if (appSettings.logo_url) {
+        if (preview) preview.innerHTML = `<img src="${appSettings.logo_url}" class="w-full h-full object-cover">`;
+      } else {
+        if (preview) preview.innerHTML = `<i data-lucide="image" class="w-6 h-6 text-slate-400"></i>`;
+      }
+
+      const modal = document.getElementById('modalSettings');
+      if (modal) modal.classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeSettingsModal() { 
+      const modal = document.getElementById('modalSettings');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    function previewSettingsLogo(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          let width = img.width, height = img.height;
+          if (width > 400) { height = Math.round((height * 400) / width); width = 400; }
+          canvas.width = width; canvas.height = height;
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob((blob) => {
+            compressedImageBlob = blob;
+            const preview = document.getElementById('settingsLogoPreview');
+            if (preview) preview.innerHTML = `<img src="${URL.createObjectURL(blob)}" class="w-full h-full object-cover"/>`;
+          }, 'image/png', 0.85);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    async function handleSaveSettings(e) {
+      e.preventDefault();
+      showLoader(true);
+      try {
+        let logoUrl = document.getElementById('settingsLogoUrl')?.value;
+        if (compressedImageBlob) {
+          const fileName = `site_logo_${Date.now()}.png`;
+          const { error } = await dbClient.storage.from('avatars').upload(fileName, compressedImageBlob, { contentType: 'image/png', upsert: true });
+          if (!error) logoUrl = dbClient.storage.from('avatars').getPublicUrl(fileName).data.publicUrl;
+        }
+
+        const payload = {
+          app_name: document.getElementById('settingAppNameInput')?.value.trim(),
+          app_sub_name: document.getElementById('settingAppSubNameInput')?.value.trim(),
+          shirt_price: parseFloat(document.getElementById('settingShirtPriceInput')?.value) || 350.00,
+          footer_text: document.getElementById('settingFooterTextInput')?.value.trim(),
+          developer_info: document.getElementById('settingDevInfoInput')?.value.trim(),
+          logo_url: logoUrl,
+          updated_at: new Date().toISOString()
+        };
+
+        await dbClient.from('app_settings').upsert({ id: 1, ...payload });
+        appSettings = { ...appSettings, ...payload };
+        await logActivity('แก้ไขการตั้งค่าระบบและข้อมูลส่วนท้าย (Footer)');
+        applySystemSettingsUI();
+        closeSettingsModal();
+        alert('บันทึกการตั้งค่าระบบและ Footer เรียบร้อยแล้ว');
+      } catch (err) {
+        alert('บันทึกไม่สำเร็จ: ' + err.message);
+      } finally {
+        showLoader(false);
+      }
+    }
+
+    function openLoginModal() { 
+      const modal = document.getElementById('modalLogin');
+      if (modal) modal.classList.remove('hidden'); 
+    }
+    function closeLoginModal() { 
+      const modal = document.getElementById('modalLogin');
+      if (modal) modal.classList.add('hidden'); 
+    }
+    function openLogoutModal() { 
+      const modal = document.getElementById('modalLogout');
+      if (modal) modal.classList.remove('hidden'); 
+    }
+    function closeLogoutModal() { 
+      const modal = document.getElementById('modalLogout');
+      if (modal) modal.classList.add('hidden'); 
+    }
+
+    function applyUserSession() {
+      if (!currentUser) return navigateLanding();
+
+      const landingView = document.getElementById('landingView');
+      const mainAppView = document.getElementById('mainAppView');
+      const mobileBottomNav = document.getElementById('mobileBottomNav');
+
+      if (landingView) landingView.classList.add('hidden');
+      if (mainAppView) mainAppView.classList.remove('hidden');
+      if (mobileBottomNav) mobileBottomNav.classList.remove('hidden');
+
+      const nameDisplay = document.getElementById('userNameDisplay');
+      const roleBadge = document.getElementById('userRoleBadge');
+      if (nameDisplay) nameDisplay.innerText = currentUser.full_name;
+      if (roleBadge) roleBadge.innerText = currentUser.role.toUpperCase();
+      
+      const avatarContainer = document.getElementById('userAvatarContainer');
+      if (avatarContainer) {
+        if (currentUser.avatar_url) {
+          avatarContainer.innerHTML = `<img src="${currentUser.avatar_url}" class="w-full h-full object-cover">`;
+        } else {
+          avatarContainer.innerHTML = `<span id="userInitial">${currentUser.full_name.charAt(0)}</span>`;
+        }
+      }
+
+      const adminNavGroup = document.getElementById('adminNavGroup');
+      const mobileAdminActionBtnWrapper = document.getElementById('mobileAdminActionBtnWrapper');
+
+      if (currentUser.role === 'admin') {
+        if (adminNavGroup) adminNavGroup.classList.remove('hidden');
+        if (mobileAdminActionBtnWrapper) mobileAdminActionBtnWrapper.classList.remove('hidden');
+      } else {
+        if (adminNavGroup) adminNavGroup.classList.add('hidden');
+        if (mobileAdminActionBtnWrapper) mobileAdminActionBtnWrapper.classList.add('hidden');
+      }
+
+      loadAllData();
+      navigate('dashboard');
+    }
+
+    function navigateLanding() {
+      const landingView = document.getElementById('landingView');
+      const mainAppView = document.getElementById('mainAppView');
+      const mobileBottomNav = document.getElementById('mobileBottomNav');
+      const mobileAdminPanel = document.getElementById('mobileAdminPanel');
+
+      if (landingView) landingView.classList.remove('hidden');
+      if (mainAppView) mainAppView.classList.add('hidden');
+      if (mobileBottomNav) mobileBottomNav.classList.add('hidden');
+      if (mobileAdminPanel) mobileAdminPanel.classList.add('hidden');
+      renderLandingOverview();
+      lucide.createIcons();
+    }
+
+    function toggleMobileAdminPanel() {
+      const panel = document.getElementById('mobileAdminPanel');
+      if (panel) panel.classList.toggle('hidden');
+      lucide.createIcons();
+    }
+
+    function renderMyProfile() {
+      if (!currentUser) return;
+      const myEmp = employeeList.find(e => e.user_id === currentUser.id) || {};
+      
+      const nameEl = document.getElementById('myProfileName');
+      const roleEl = document.getElementById('myProfileRole');
+      const schoolEl = document.getElementById('myProfileSchool');
+      const codeEl = document.getElementById('myProfileCode');
+      const posEl = document.getElementById('myProfilePos');
+      const districtEl = document.getElementById('myProfileDistrict');
+      const phoneEl = document.getElementById('myProfilePhone');
+      const remainEl = document.getElementById('myProfileRemainingTime');
+
+      if (nameEl) nameEl.innerText = `${myEmp.prefix || ''}${currentUser.full_name}`;
+      if (roleEl) roleEl.innerText = `สิทธิ์การใช้งาน: ${currentUser.role.toUpperCase()}`;
+      if (schoolEl) schoolEl.innerText = myEmp.school ? `โรงเรียน${myEmp.school}` : 'ยังไม่ได้เชื่อมโยงข้อมูลสังกัด';
+      if (codeEl) codeEl.innerText = myEmp.emp_code || '-';
+      if (posEl) posEl.innerText = myEmp.position || '-';
+      if (districtEl) districtEl.innerText = myEmp.district || '-';
+      if (phoneEl) phoneEl.innerText = myEmp.phone || '-';
+
+      if (myEmp.retire_date && remainEl) {
+        const rem = calculateRemainingTime(new Date(), new Date(myEmp.retire_date));
+        remainEl.innerText = rem.isExpired ? "ครบเกษียณอายุราชการแล้ว" : `${rem.years} ปี ${rem.months} เดือน ${rem.days} วัน`;
+      }
+
+      const avatarContainer = document.getElementById('myProfileAvatar');
+      const avatarSrc = myEmp.avatar_url || currentUser.avatar_url;
+      if (avatarContainer) {
+        if (avatarSrc) avatarContainer.innerHTML = `<img src="${avatarSrc}" class="w-full h-full object-cover"/>`;
+        else avatarContainer.innerText = currentUser.full_name.charAt(0);
+      }
+    }
+  </script>
+</body>
+</html>
