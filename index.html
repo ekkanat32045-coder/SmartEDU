@@ -82,7 +82,7 @@
       box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
     }
     html.light .fintech-panel {
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.85);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(0, 0, 0, 0.08);
@@ -159,7 +159,6 @@
       background-color: rgba(0, 0, 0, 0.15);
     }
 
-    /* Sidebar Transitions */
     .sidebar-collapsed {
       width: 5rem !important;
     }
@@ -198,7 +197,6 @@
         </div>
       </div>
       <div class="flex items-center gap-2">
-        <!-- Theme Toggle Button -->
         <button onclick="toggleTheme()" class="p-2 rounded-xl fintech-card hover:bg-white/10 text-slate-300 transition" title="สลับโหมด มืด-สว่าง">
           <i id="landingThemeIcon" data-lucide="sun" class="w-4 h-4"></i>
         </button>
@@ -604,7 +602,7 @@
           </div>
         </section>
 
-        <!-- ================= TAB: DISTRICT MATRIX REPORT (ใหม่) ================= -->
+        <!-- ================= TAB: DISTRICT MATRIX REPORT ================= -->
         <section id="sec-district-matrix" class="hidden space-y-6 animate-fade-in">
           <div class="fintech-panel p-5 rounded-3xl border border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
@@ -834,7 +832,10 @@
               <div id="myProfileAvatar" class="w-24 h-24 rounded-2xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-2xl overflow-hidden border border-white/20 shadow-xl cursor-pointer" onclick="viewDetailModal(currentUser ? currentUser.full_name : '', '', '', '', '', '', '', document.getElementById('myProfileAvatar').querySelector('img')?.src)">
               </div>
               <div class="text-center sm:text-left flex-1">
-                <h3 id="myProfileName" class="text-lg font-bold">ชื่อผู้ใช้งาน</h3>
+                <div class="flex items-center gap-2 justify-center sm:justify-start">
+                  <h3 id="myProfileName" class="text-lg font-bold">ชื่อผู้ใช้งาน</h3>
+                  <span id="myProfileCoordinatorBadge" class="hidden px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-300 border border-amber-500/30 font-medium">ตัวแทนผู้ประสานงาน</span>
+                </div>
                 <p id="myProfileRole" class="text-xs text-rose-400 font-mono mt-0.5">ROLE</p>
                 <p id="myProfileSchool" class="text-xs text-slate-300 mt-1 font-light">โรงเรียน -</p>
               </div>
@@ -1027,7 +1028,7 @@
     </div>
   </div>
 
-  <!-- MODAL: VIEW DETAIL & AVATAR POPUP -->
+  <!-- MODAL: VIEW DETAIL & AVATAR POPUP (ปรับวันเกษียณภาษาไทย) -->
   <div id="modalDetail" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-sm w-full p-6 border border-white/20 shadow-2xl text-center space-y-4 animate-fade-in text-xs">
       <div class="w-28 h-28 mx-auto rounded-3xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 overflow-hidden border-2 border-white/20 shadow-2xl flex items-center justify-center">
@@ -1035,21 +1036,27 @@
         <span id="detailAvatarPlaceholder" class="text-2xl font-bold">PE</span>
       </div>
       <div>
-        <h3 id="detailFullName" class="text-base font-bold mt-1">-</h3>
+        <div class="flex items-center justify-center gap-1.5 flex-wrap">
+          <h3 id="detailFullName" class="text-base font-bold mt-1">-</h3>
+          <span id="detailCoordinatorTag" class="hidden px-2 py-0.5 rounded-full text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30">ผู้ประสานงาน รร.</span>
+        </div>
         <p id="detailPosition" class="text-rose-400 font-medium">-</p>
         <p id="detailSchool" class="text-slate-400 mt-0.5">-</p>
       </div>
       <div class="p-3.5 bg-white/5 rounded-2xl text-left border border-white/10 space-y-1.5 font-light text-[11px]">
         <p><strong>รหัสประจำตัว:</strong> <span id="detailCode" class="font-mono">-</span></p>
+        <p><strong>เพศ:</strong> <span id="detailGender">-</span></p>
         <p><strong>สหวิทยาเขต:</strong> <span id="detailDistrict">-</span></p>
         <p><strong>เบอร์โทรศัพท์:</strong> <span id="detailPhone" class="font-mono">-</span></p>
-        <p><strong>วันเกษียณ:</strong> <span id="detailRetire" class="font-mono text-amber-400">-</span></p>
+        <p><strong>วันเกิด (พ.ศ.):</strong> <span id="detailBirthDate" class="text-sky-300">-</span></p>
+        <p><strong>วันเกษียณอายุราชการ (พ.ศ.):</strong> <span id="detailRetire" class="font-bold text-amber-400">-</span></p>
+        <p><strong>อายุราชการคงเหลือ:</strong> <span id="detailRemaining" class="text-emerald-400">-</span></p>
       </div>
       <button type="button" onclick="closeDetailModal()" class="w-full py-2 fintech-card hover:bg-white/10 text-slate-200 rounded-xl font-medium">ปิดหน้าต่าง</button>
     </div>
   </div>
 
-  <!-- MODAL: EMPLOYEE FORM -->
+  <!-- MODAL: EMPLOYEE FORM (พร้อม Checkbox ผู้ประสานงาน) -->
   <div id="modalEmployee" class="hidden fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xl flex items-center justify-center p-4">
     <div class="fintech-panel rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden border border-white/20 shadow-2xl">
       <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
@@ -1076,7 +1083,8 @@
           </div>
           <div>
             <label class="block text-slate-300 mb-1">คำนำหน้า *</label>
-            <select id="empFormPrefix" onchange="autoSyncGenderFromPrefix()" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <select id="empFormPrefix" onchange="autoSyncGenderFromPrefix()" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="">-- เลือกคำนำหน้า --</option>
               <option value="นาย">นาย</option>
               <option value="นาง">นาง</option>
               <option value="นางสาว">นางสาว</option>
@@ -1087,7 +1095,8 @@
           </div>
           <div>
             <label class="block text-slate-300 mb-1">เพศ *</label>
-            <select id="empFormGender" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <select id="empFormGender" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="">-- เลือกเพศ --</option>
               <option value="ชาย">ชาย</option>
               <option value="หญิง">หญิง</option>
             </select>
@@ -1096,13 +1105,14 @@
 
         <div>
           <label class="block text-slate-300 mb-1">ชื่อ - นามสกุล (ไม่ต้องระบุคำนำหน้า) *</label>
-          <input type="text" id="empFormName" placeholder="สมชาย มุ่งมั่น" required class="glass-input w-full px-3 py-2 rounded-xl">
+          <input type="text" id="empFormName" placeholder="สมชาย มุ่งมั่น" class="glass-input w-full px-3 py-2 rounded-xl">
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-300 mb-1">ตำแหน่ง / วิทยฐานะ *</label>
-            <select id="empFormPosition" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <select id="empFormPosition" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+              <option value="">-- เลือกตำแหน่ง --</option>
               <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
               <option value="ครู ค.ศ.1">ครู ค.ศ.1</option>
               <option value="ครูชำนาญการ">ครูชำนาญการ</option>
@@ -1113,7 +1123,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-slate-300 mb-1">เบอร์โทรศัพท์</label>
+            <label class="block text-slate-300 mb-1">เบอร์โทรศัพท์ *</label>
             <input type="tel" id="empFormPhone" placeholder="08xxxxxxxx" class="glass-input w-full px-3 py-2 rounded-xl font-mono">
           </div>
         </div>
@@ -1121,16 +1131,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-300 mb-1">สหวิทยาเขต *</label>
-            <select id="empFormDistrict" onchange="onFormDistrictChange()" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <select id="empFormDistrict" onchange="onFormDistrictChange()" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
               <option value="">-- เลือกสหวิทยาเขต --</option>
             </select>
           </div>
           <div>
             <label class="block text-slate-300 mb-1">โรงเรียนสังกัด *</label>
-            <select id="empFormSchool" required class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
+            <select id="empFormSchool" class="glass-input w-full px-3 py-2 rounded-xl bg-slate-900">
               <option value="">-- เลือกโรงเรียน --</option>
             </select>
           </div>
+        </div>
+
+        <!-- ตัวแทนผู้ประสานงานโรงเรียน (ใหม่) -->
+        <div class="p-3 bg-white/5 rounded-xl border border-white/10 flex items-center justify-between">
+          <div>
+            <label for="empFormIsCoordinator" class="font-medium text-slate-200 cursor-pointer">ตัวแทนผู้ประสานงานโรงเรียน</label>
+            <p class="text-[10px] text-slate-400">แต่งตั้งเป็นครูแกนนำประสานงานระดับสถานศึกษากับ สพม.</p>
+          </div>
+          <input type="checkbox" id="empFormIsCoordinator" class="w-4 h-4 rounded text-sky-500 bg-slate-800 border-white/20 focus:ring-sky-500 cursor-pointer">
         </div>
 
         <div class="space-y-1">
@@ -1426,6 +1445,11 @@
       ]
     };
 
+    const THAI_MONTHS_FULL = [
+      "", "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
+      "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม"
+    ];
+
     // 3. GLOBAL VARIABLES
     let currentUser = null;
     let employeeList = [];
@@ -1454,7 +1478,17 @@
     let landingChartDistrict = null;
     let landingChartPosition = null;
 
-    // 4. THEME & SIDEBAR TOGGLE
+    // 4. DATE HELPER (แปลง ISO Date เป็นภาษาไทยเต็มรูปแบบ)
+    function formatThaiDate(isoStr) {
+      if (!isoStr) return '-';
+      const [y, m, d] = isoStr.split('-');
+      const day = parseInt(d, 10);
+      const monthIndex = parseInt(m, 10);
+      const thYear = parseInt(y, 10) + 543;
+      return `${day} ${THAI_MONTHS_FULL[monthIndex]} พ.ศ. ${thYear}`;
+    }
+
+    // 5. THEME & SIDEBAR TOGGLE
     function toggleTheme() {
       const root = document.getElementById('htmlRoot');
       const isDark = root.classList.contains('dark');
@@ -1505,7 +1539,7 @@
       if (window.lucide) lucide.createIcons();
     }
 
-    // 5. DROPDOWN & DATEPICKER INITIALIZERS
+    // 6. DROPDOWN & DATEPICKER INITIALIZERS
     function initDropdownOptions() {
       const filterDistrict = document.getElementById('filterDistrictSelect');
       const formDistrict = document.getElementById('empFormDistrict');
@@ -1671,7 +1705,7 @@
       return { isExpired: false, years, months, days };
     }
 
-    // 6. DOM CONTENT LOADED EVENT
+    // 7. DOM CONTENT LOADED EVENT
     window.addEventListener('DOMContentLoaded', async () => {
       initTheme();
       lucide.createIcons();
@@ -1884,7 +1918,7 @@
 
         const avatarHTML = u.avatar_url 
           ? `<img src="${u.avatar_url}" class="w-8 h-8 rounded-full object-cover border border-white/20">`
-          : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500/20 to-sky-500/20 flex items-center justify-center font-bold text-xs border border-white/10">${u.full_name.charAt(0)}</div>`;
+          : `<div class="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500/20 to-sky-500/20 text-white flex items-center justify-center font-bold text-xs border border-white/10">${u.full_name.charAt(0)}</div>`;
 
         tr.innerHTML = `
           <td class="py-3 px-4 flex items-center gap-2.5">
@@ -2009,7 +2043,7 @@
       }
     }
 
-    // 7. DISTRICT MATRIX REPORT LOGIC (9 สหวิทยาเขต)
+    // 8. DISTRICT MATRIX REPORT LOGIC (9 สหวิทยาเขต)[cite: 1]
     function renderDistrictMatrixTable() {
       const tbody = document.getElementById('districtMatrixTableBody');
       if (!tbody) return;
@@ -2090,7 +2124,7 @@
       XLSX.writeFile(wb, `รายงานสารสนเทศครูพละ_แยกตามสหวิทยาเขต_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
-    // 8. NAVIGATION ROUTER
+    // 9. NAVIGATION ROUTER
     function navigate(section) {
       const landingView = document.getElementById('landingView');
       const mainAppView = document.getElementById('mainAppView');
@@ -2178,7 +2212,8 @@
       }, 'image/jpeg', 0.85);
     }
 
-    function viewDetailModal(name, position, school, district, code, phone, retire, avatarUrl) {
+    // POPUP DETAIL & AVATAR VIEWER (ปรับวันเกษียณภาษาไทย)
+    function viewDetailModal(name, position, school, district, code, phone, retire, avatarUrl, gender, birthDate, isCoordinator) {
       const fullNameEl = document.getElementById('detailFullName');
       const posEl = document.getElementById('detailPosition');
       const schoolEl = document.getElementById('detailSchool');
@@ -2186,6 +2221,10 @@
       const districtEl = document.getElementById('detailDistrict');
       const phoneEl = document.getElementById('detailPhone');
       const retireEl = document.getElementById('detailRetire');
+      const genderEl = document.getElementById('detailGender');
+      const birthEl = document.getElementById('detailBirthDate');
+      const remainingEl = document.getElementById('detailRemaining');
+      const coordinatorTag = document.getElementById('detailCoordinatorTag');
 
       if (fullNameEl) fullNameEl.innerText = name || '-';
       if (posEl) posEl.innerText = position || '-';
@@ -2193,7 +2232,21 @@
       if (codeEl) codeEl.innerText = code || '-';
       if (districtEl) districtEl.innerText = district || '-';
       if (phoneEl) phoneEl.innerText = phone || '-';
-      if (retireEl) retireEl.innerText = retire || '-';
+      if (genderEl) genderEl.innerText = gender || 'ชาย';
+      if (birthEl) birthEl.innerText = formatThaiDate(birthDate);
+      if (retireEl) retireEl.innerText = formatThaiDate(retire);
+
+      if (retire && remainingEl) {
+        const rem = calculateRemainingTime(new Date(), new Date(retire));
+        remainingEl.innerText = rem.isExpired ? "ครบเกษียณอายุราชการแล้ว" : `${rem.years} ปี ${rem.months} เดือน ${rem.days} วัน`;
+      } else if (remainingEl) {
+        remainingEl.innerText = '-';
+      }
+
+      if (coordinatorTag) {
+        if (isCoordinator) coordinatorTag.classList.remove('hidden');
+        else coordinatorTag.classList.add('hidden');
+      }
 
       const img = document.getElementById('detailAvatarImg');
       const placeholder = document.getElementById('detailAvatarPlaceholder');
@@ -2219,8 +2272,8 @@
       const data = employeeList.map((e, index) => {
         const rem = e.retire_date ? calculateRemainingTime(new Date(), new Date(e.retire_date)) : null;
         const remStr = rem ? (rem.isExpired ? "เกษียณแล้ว" : `${rem.years} ปี ${rem.months} เดือน ${rem.days} วัน`) : "-";
-        const bTh = e.birth_date ? `${new Date(e.birth_date).getDate()}/${new Date(e.birth_date).getMonth()+1}/${new Date(e.birth_date).getFullYear()+543}` : "-";
-        const rTh = e.retire_date ? `30 ก.ย. ${new Date(e.retire_date).getFullYear()+543}` : "-";
+        const bTh = formatThaiDate(e.birth_date);
+        const rTh = formatThaiDate(e.retire_date);
 
         return {
           "ลำดับ": index + 1,
@@ -2231,9 +2284,10 @@
           "ตำแหน่ง/วิทยฐานะ": e.position,
           "โรงเรียน": e.school,
           "สหวิทยาเขต": e.district,
+          "ผู้ประสานงาน รร.": e.is_coordinator ? "ใช่" : "ไม่ใช่",
           "เบอร์โทรศัพท์": e.phone || "-",
           "วันเดือนปีเกิด (พ.ศ.)": bTh,
-          "วันเกษียณอายุราชการ": rTh,
+          "วันเกษียณอายุราชการ (พ.ศ.)": rTh,
           "อายุราชการคงเหลือ": remStr
         };
       });
@@ -2540,7 +2594,7 @@
 
         tr.innerHTML = `
           <td class="py-3 px-4">
-            <div class="font-semibold cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${item.emp.prefix || ''}${item.emp.full_name}', '${item.emp.position}', '${item.emp.school}', '${item.emp.district}', '${item.emp.emp_code}', '${item.emp.phone || '-'}', '${item.emp.retire_date || '-'}', '${item.emp.avatar_url || ''}')">${item.emp.prefix || ''}${item.emp.full_name}</div>
+            <div class="font-semibold cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${item.emp.prefix || ''}${item.emp.full_name}', '${item.emp.position}', '${item.emp.school}', '${item.emp.district}', '${item.emp.emp_code}', '${item.emp.phone || '-'}', '${item.emp.retire_date || '-'}', '${item.emp.avatar_url || ''}', '${item.emp.gender || 'ชาย'}', '${item.emp.birth_date || ''}', ${item.emp.is_coordinator || false})">${item.emp.prefix || ''}${item.emp.full_name}</div>
             <div class="text-[10px] text-rose-300 font-mono">${item.emp.emp_code}</div>
           </td>
           <td class="py-3 px-4">${item.emp.gender || 'ชาย'}</td>
@@ -2599,9 +2653,9 @@
     }
 
     function downloadCSVTemplate() {
-      let csv = "\uFEFFรหัสประจำตัว,คำนำหน้า,ชื่อ-นามสกุล,เพศ,ตำแหน่ง,สหวิทยาเขต,โรงเรียน,เบอร์โทรศัพท์,วันเดือนปีเกิด(YYYY-MM-DD)\n";
-      csv += "PE-2569-0001,นาย,สมชาย มุ่งมั่น,ชาย,ครูชำนาญการ,สหวิทยาเขตกระสัง,กระสังพิทยาคม,0812345678,1985-05-15\n";
-      csv += "PE-2569-0002,นางสาว,ใจดี รักเรียน,หญิง,พนักงานราชการ,สหวิทยาเขตนางรอง,นางรอง,0898765432,1992-10-20\n";
+      let csv = "\uFEFFรหัสประจำตัว,คำนำหน้า,ชื่อ-นามสกุล,เพศ,ตำแหน่ง,สหวิทยาเขต,โรงเรียน,ผู้ประสานงาน(ใช่/ไม่ใช่),เบอร์โทรศัพท์,วันเดือนปีเกิด(YYYY-MM-DD)\n";
+      csv += "PE-2569-0001,นาย,สมชาย มุ่งมั่น,ชาย,ครูชำนาญการ,สหวิทยาเขตกระสัง,กระสังพิทยาคม,ใช่,0812345678,1985-05-15\n";
+      csv += "PE-2569-0002,นางสาว,ใจดี รักเรียน,หญิง,พนักงานราชการ,สหวิทยาเขตนางรอง,นางรอง,ไม่ใช่,0898765432,1992-10-20\n";
       const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -2660,8 +2714,9 @@
           const position = cols[4] || 'ครูผู้ช่วย';
           const district = cols[5] || 'สหวิทยาเขตเมืองบุรีรัมย์';
           const school = cols[6] || '';
-          const phone = cols[7] || '';
-          const birth_date = cols[8] || null;
+          const is_coordinator = (cols[7] === 'ใช่' || cols[7] === 'true');
+          const phone = cols[8] || '';
+          const birth_date = cols[9] || null;
 
           let retire_date = null;
           if (birth_date) {
@@ -2672,7 +2727,7 @@
               retire_date = `${rYear}-09-30`;
             }
           }
-          bulkParsedRows.push({ emp_code, prefix, full_name, gender, position, district, school, phone, birth_date, retire_date });
+          bulkParsedRows.push({ emp_code, prefix, full_name, gender, position, district, school, is_coordinator, phone, birth_date, retire_date });
           if (previewBox) previewBox.innerHTML += `<div>${i}. ${prefix}${full_name} (${school} - ${district})</div>`;
         }
       }
@@ -2734,15 +2789,16 @@
       retiringList.forEach(emp => {
         const tr = document.createElement('tr');
         tr.className = "hover:bg-white/5 transition";
-        const bThYear = emp.birth_date ? new Date(emp.birth_date).getFullYear() + 543 : '-';
+        const bThFormatted = formatThaiDate(emp.birth_date);
+        const rThFormatted = formatThaiDate(emp.retire_date);
         tr.innerHTML = `
           <td class="py-3 px-4 font-mono text-slate-400">${emp.emp_code}</td>
-          <td class="py-3 px-4 font-semibold cursor-pointer hover:text-sky-300" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</td>
+          <td class="py-3 px-4 font-semibold cursor-pointer hover:text-sky-300" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}', '${emp.gender || 'ชาย'}', '${emp.birth_date || ''}', ${emp.is_coordinator || false})">${emp.prefix || ''}${emp.full_name}</td>
           <td class="py-3 px-4"><span class="px-2 py-0.5 rounded bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
           <td class="py-3 px-4 text-slate-400">${emp.school}</td>
           <td class="py-3 px-4 text-sky-400">${emp.district}</td>
-          <td class="py-3 px-4 font-mono text-slate-400">${bThYear}</td>
-          <td class="py-3 px-4 font-mono text-rose-400 font-bold">30 ก.ย. ${selectedYear + 543}</td>
+          <td class="py-3 px-4 text-slate-400">${bThFormatted}</td>
+          <td class="py-3 px-4 text-rose-400 font-bold">${rThFormatted}</td>
         `;
         tbody.appendChild(tr);
       });
@@ -2798,24 +2854,30 @@
             : `<span class="font-mono text-amber-300 font-medium">${rem.years} ปี ${rem.months} ด.</span>`;
         }
 
-        const retireThYear = emp.retire_date ? new Date(emp.retire_date).getFullYear() + 543 : '-';
+        const retireThFormatted = emp.retire_date ? formatThaiDate(emp.retire_date) : '-';
         let avatarHTML = `
-          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 flex items-center justify-center font-bold text-xs border border-white/10 overflow-hidden shadow-inner shrink-0 cursor-pointer hover:scale-105 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">
+          <div class="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-500/20 to-sky-500/20 flex items-center justify-center font-bold text-xs border border-white/10 overflow-hidden shadow-inner shrink-0 cursor-pointer hover:scale-105 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}', '${emp.gender || 'ชาย'}', '${emp.birth_date || ''}', ${emp.is_coordinator || false})">
             ${emp.avatar_url ? `<img src="${emp.avatar_url}" class="w-full h-full object-cover"/>` : `<span>${emp.full_name.charAt(0)}</span>`}
           </div>
         `;
 
+        const coordinatorBadge = emp.is_coordinator 
+          ? `<span class="ml-1.5 px-1.5 py-0.5 rounded text-[9px] bg-amber-500/20 text-amber-300 border border-amber-500/30">ผู้ประสานงาน</span>` 
+          : '';
+
         tr.innerHTML = `
           <td class="py-3 px-4">${avatarHTML}</td>
           <td class="py-3 px-4">
-            <div class="font-semibold cursor-pointer hover:text-sky-300 transition" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}')">${emp.prefix || ''}${emp.full_name}</div>
+            <div class="font-semibold cursor-pointer hover:text-sky-300 transition flex items-center flex-wrap" onclick="viewDetailModal('${emp.prefix || ''}${emp.full_name}', '${emp.position}', '${emp.school}', '${emp.district}', '${emp.emp_code}', '${emp.phone || '-'}', '${emp.retire_date || '-'}', '${emp.avatar_url || ''}', '${emp.gender || 'ชาย'}', '${emp.birth_date || ''}', ${emp.is_coordinator || false})">
+              ${emp.prefix || ''}${emp.full_name} ${coordinatorBadge}
+            </div>
             <div class="text-[10px] text-rose-300 font-mono">${emp.emp_code}</div>
           </td>
           <td class="py-3 px-4">${emp.gender || 'ชาย'}</td>
           <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md bg-white/10 text-slate-200 text-[11px]">${emp.position}</span></td>
           <td class="py-3 px-4"><div>${emp.school}</div><div class="text-[10px] text-sky-400">${emp.district}</div></td>
           <td class="py-3 px-4">${remainingBadge}</td>
-          <td class="py-3 px-4 font-mono text-slate-400 text-[11px]">${retireThYear !== '-' ? `30 ก.ย. ${retireThYear}` : '-'}</td>
+          <td class="py-3 px-4 text-slate-300 text-[11px]">${retireThFormatted}</td>
           <td class="py-3 px-4 text-center">
             <div class="flex items-center justify-center gap-1.5">
               ${canEdit ? `<button onclick="editEmployee('${emp.id}')" class="p-1.5 text-sky-400 hover:bg-white/10 rounded-lg transition" title="แก้ไข"><i data-lucide="edit-3" class="w-3.5 h-3.5"></i></button>` : ''}
@@ -2862,6 +2924,7 @@
         const phone = document.getElementById('empFormPhone');
         const district = document.getElementById('empFormDistrict');
         const school = document.getElementById('empFormSchool');
+        const isCoordinator = document.getElementById('empFormIsCoordinator');
 
         if (empCode) empCode.value = emp.emp_code || '';
         if (prefix) prefix.value = emp.prefix || 'นาย';
@@ -2869,6 +2932,7 @@
         if (fullName) fullName.value = emp.full_name || '';
         if (position) position.value = emp.position || 'ครูผู้ช่วย';
         if (phone) phone.value = emp.phone || '';
+        if (isCoordinator) isCoordinator.checked = !!emp.is_coordinator;
         if (district) {
           district.value = emp.district || '';
           onFormDistrictChange();
@@ -2878,6 +2942,8 @@
       } else {
         const empCode = document.getElementById('empFormCode');
         if (empCode) empCode.value = generateAutoEmpCode();
+        const isCoordinator = document.getElementById('empFormIsCoordinator');
+        if (isCoordinator) isCoordinator.checked = false;
       }
 
       const modal = document.getElementById('modalEmployee');
@@ -2890,8 +2956,36 @@
       if (modal) modal.classList.add('hidden'); 
     }
 
+    // ตรวจสอบความถูกต้องและแจ้งเตือนฟิลด์ที่ยังขาดหายไป
     async function handleSaveEmployee(e) {
       e.preventDefault();
+
+      const prefix = document.getElementById('empFormPrefix')?.value.trim();
+      const gender = document.getElementById('empFormGender')?.value.trim();
+      const full_name = document.getElementById('empFormName')?.value.trim();
+      const position = document.getElementById('empFormPosition')?.value.trim();
+      const phone = document.getElementById('empFormPhone')?.value.trim();
+      const district = document.getElementById('empFormDistrict')?.value.trim();
+      const school = document.getElementById('empFormSchool')?.value.trim();
+      const birth_date = document.getElementById('empFormBirth')?.value.trim();
+      const retire_date = document.getElementById('empFormRetire')?.value.trim();
+      const is_coordinator = document.getElementById('empFormIsCoordinator')?.checked || false;
+
+      const missingFields = [];
+      if (!prefix) missingFields.push('คำนำหน้า');
+      if (!gender) missingFields.push('เพศ');
+      if (!full_name) missingFields.push('ชื่อ - นามสกุล');
+      if (!position) missingFields.push('ตำแหน่ง / วิทยฐานะ');
+      if (!district) missingFields.push('สหวิทยาเขต');
+      if (!school) missingFields.push('โรงเรียนสังกัด');
+      if (!phone) missingFields.push('เบอร์โทรศัพท์');
+      if (!birth_date) missingFields.push('วัน/เดือน/ปีเกิด (พุทธศักราช)');
+
+      if (missingFields.length > 0) {
+        alert('กรุณากรอกข้อมูลให้ครบทุกช่อง ดังนี้:\n- ' + missingFields.join('\n- '));
+        return;
+      }
+
       showLoader(true);
 
       try {
@@ -2906,15 +3000,16 @@
 
         const payload = {
           emp_code: document.getElementById('empFormCode')?.value.trim(),
-          prefix: document.getElementById('empFormPrefix')?.value,
-          full_name: document.getElementById('empFormName')?.value.trim(),
-          gender: document.getElementById('empFormGender')?.value,
-          position: document.getElementById('empFormPosition')?.value,
-          phone: document.getElementById('empFormPhone')?.value.trim(),
-          school: document.getElementById('empFormSchool')?.value.trim(),
-          district: document.getElementById('empFormDistrict')?.value,
-          birth_date: document.getElementById('empFormBirth')?.value || null,
-          retire_date: document.getElementById('empFormRetire')?.value || null,
+          prefix: prefix,
+          full_name: full_name,
+          gender: gender,
+          position: position,
+          phone: phone,
+          school: school,
+          district: district,
+          is_coordinator: is_coordinator,
+          birth_date: birth_date || null,
+          retire_date: retire_date || null,
           avatar_url: avatarUrl,
           updated_at: new Date().toISOString()
         };
@@ -3322,6 +3417,7 @@
       const districtEl = document.getElementById('myProfileDistrict');
       const phoneEl = document.getElementById('myProfilePhone');
       const remainEl = document.getElementById('myProfileRemainingTime');
+      const coordBadge = document.getElementById('myProfileCoordinatorBadge');
 
       if (nameEl) nameEl.innerText = `${myEmp.prefix || ''}${currentUser.full_name}`;
       if (roleEl) roleEl.innerText = `สิทธิ์การใช้งาน: ${currentUser.role.toUpperCase()}`;
@@ -3330,6 +3426,11 @@
       if (posEl) posEl.innerText = myEmp.position || '-';
       if (districtEl) districtEl.innerText = myEmp.district || '-';
       if (phoneEl) phoneEl.innerText = myEmp.phone || '-';
+
+      if (coordBadge) {
+        if (myEmp.is_coordinator) coordBadge.classList.remove('hidden');
+        else coordBadge.classList.add('hidden');
+      }
 
       if (myEmp.retire_date && remainEl) {
         const rem = calculateRemainingTime(new Date(), new Date(myEmp.retire_date));
